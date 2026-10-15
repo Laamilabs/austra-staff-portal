@@ -1,0 +1,376 @@
+[{
+  "courseCode": "CP",
+  "name": "Computer Packages"
+},
+{
+  "courseCode": "CCOO",
+  "name": "Certificate in Cooperative Management"
+},
+{
+  "courseCode": "DHRM",
+  "name": "Diploma in Human Resource Management"
+},
+{
+  "courseCode": "DBT",
+  "name": "Diploma in Bakery Technology"
+},
+{
+  "courseCode": "CAMS",
+  "name": "Certificate in Accounting & Management Skills (CAMS)"
+},
+{
+  "courseCode": "MB1.",
+  "name": "MUSIC BEGINNER LEVEL"
+},
+{
+  "courseCode": "HSS5",
+  "name": "Health Services Support Level 5"
+},
+{
+  "courseCode": "CHRM",
+  "name": "Certificate in Human Resource Management"
+},
+{
+  "courseCode": "CTTT",
+  "name": "Certificate in Tourism & Travel & Tour Operations"
+},
+{
+  "courseCode": "DLSM",
+  "name": "Diploma in Land Surveying & Mapping"
+},
+{
+  "courseCode": "MI1",
+  "name": "MUSIC INTERMEDIATE LEVEL"
+},
+{
+  "courseCode": "CACC",
+  "name": "Certificate in Accountancy"
+},
+{
+  "courseCode": "CPMD",
+  "name": "Certificate in Project Management & Development"
+},
+{
+  "courseCode": "CNT",
+  "name": "Certificate in Nail Technology"
+},
+{
+  "courseCode": "DDMTC",
+  "name": "Diploma in Disaster Management & Trauma Counselling"
+},
+{
+  "courseCode": "DGA",
+  "name": "Diploma in General Agriculture"
+},
+{
+  "courseCode": "CCJ",
+  "name": "Certificate in Carpentry and Joinery"
+},
+{
+  "courseCode": "CD",
+  "name": "Certificate IV in Disability"
+},
+{
+  "courseCode": "DPMD",
+  "name": "Diploma in Project Management & Development"
+},
+{
+  "courseCode": "CED",
+  "name": "Certificate in Entrepreneurship Development"
+},
+{
+  "courseCode": "AFD",
+  "name": "Artisan in Fashion and Design"
+},
+{
+  "courseCode": "DHIV",
+  "name": "Diploma in HIV Testing and Management"
+},
+{
+  "courseCode": "DAE",
+  "name": "Diploma in Automotive Engineering"
+},
+{
+  "courseCode": "CFPS",
+  "name": "Certificate in Fire Protection and Safety Technology"
+},
+{
+  "courseCode": "CLSM",
+  "name": "Certificate in Land Surveying & Mapping"
+},
+{
+  "courseCode": "AEI",
+  "name": "Artisan in Electrical Installation"
+},
+{
+  "courseCode": "ASM",
+  "name": "Automotive Service and Maintenance "
+},
+{
+  "courseCode": "CHBT",
+  "name": "Certificate in Hairdressing and Beauty Therapy"
+},
+{
+  "courseCode": "CFBS",
+  "name": "Certificate in Food & Beverage Production Sales & Service Management"
+},
+{
+  "courseCode": "DFPS",
+  "name": "Diploma in Fire Protection and Safety Technology"
+},
+{
+  "courseCode": "AGA",
+  "name": "Artisan in General Agriculture"
+},
+{
+  "courseCode": "DCOO",
+  "name": "Diploma in Cooperative Management"
+},
+{
+  "courseCode": "DWE",
+  "name": "Diploma in Water Engineering (Plumbing)"
+},
+{
+  "courseCode": "DHRIT",
+  "name": "Diploma in Health Records and Information Technology"
+},
+{
+  "courseCode": "DEEE",
+  "name": "Diploma in Electrical/Electronics Engineering (Power Option)"
+},
+{
+  "courseCode": "DJOUR",
+  "name": "Diploma in Journalism"
+},
+{
+  "courseCode": "GA1",
+  "name": "German A1"
+},
+{
+  "courseCode": "AD",
+  "name": "Dual Qualification in Certificate III in Individual Support (Ageing & Disability)"
+},
+{
+  "courseCode": "ICT4",
+  "name": "Information Communication Technology  Level 4"
+},
+{
+  "courseCode": "CYF",
+  "name": "Fundamentals of Cybersecurity"
+},
+{
+  "courseCode": "CYD",
+  "name": "Childcare and Youth Development"
+},
+{
+  "courseCode": "ASKM",
+  "name": "Artisan in Store Keeping Management"
+},
+{
+  "courseCode": "CFDG",
+  "name": "Certificate in Fashion, Design & Garment Making"
+},
+{
+  "courseCode": "CWE",
+  "name": "Certificate in Water Engineering (Plumbing)"
+},
+{
+  "courseCode": "CISA",
+  "name": "Certificate III in Individual Support (Ageing)"
+},
+{
+  "courseCode": "CIS",
+  "name": "Certificate III in Individual Support (Ageing)"
+},
+{
+  "courseCode": "DLIS",
+  "name": "Diploma in Library and Information Science"
+},
+{
+  "courseCode": "CSCM",
+  "name": "Certificate in Supply Chain Management"
+},
+{
+  "courseCode": "DHL",
+  "name": "Diploma in Housekeeping and Laundry"
+},
+{
+  "courseCode": "CBT",
+  "name": "Certificate in Bakery Technology"
+},
+{
+  "courseCode": "DFBS",
+  "name": "Diploma in Food & Beverage Production Sales & Service Management"
+},
+{
+  "courseCode": "CSL",
+  "name": "Certificate in Science Laboratory"
+},
+{
+  "courseCode": "GB2",
+  "name": "GERMAN B2"
+},
+{
+  "courseCode": "HSS4",
+  "name": "Health Services Support Level 4"
+},
+{
+  "courseCode": "ICT5",
+  "name": "Information Communication Technology  Level 5"
+},
+{
+  "courseCode": "WT",
+  "name": "Web Technologies"
+},
+{
+  "courseCode": "DED",
+  "name": "Diploma in Entrepreneurship Development"
+},
+{
+  "courseCode": "CCAH",
+  "name": "Certificate in Catering Accommodation, House Keeping and Laundry"
+},
+{
+  "courseCode": "CNA",
+  "name": "Certificate in Nurse Assistant (CNA)"
+},
+{
+  "courseCode": "CHRIT",
+  "name": "Certificate in Health Records and Information Technology"
+},
+{
+  "courseCode": "DCAH",
+  "name": "Diploma in Catering Accommodation, House Keeping and Laundry"
+},
+{
+  "courseCode": "CHL",
+  "name": "Certificate in Housekeeping and Laundry"
+},
+{
+  "courseCode": "CEEE",
+  "name": "Certificate in Electrical/Electronics Engineering (Power Option)"
+},
+{
+  "courseCode": "CBTEC",
+  "name": "Certificate in Building and Construction Technology"
+},
+{
+  "courseCode": "APL",
+  "name": "Artisan in Plumbing"
+},
+{
+  "courseCode": "DICT",
+  "name": "Diploma in ICT"
+},
+{
+  "courseCode": "DTTT",
+  "name": "Diploma in Tourism & Travel & Tour Operations"
+},
+{
+  "courseCode": "CCLO",
+  "name": "Certificate in Clerical Operations"
+},
+{
+  "courseCode": "DFDG",
+  "name": "Diploma in Fashion, Design & Garment Making"
+},
+{
+  "courseCode": "DNDM",
+  "name": "Diploma in Nutrition & Dietetics Management"
+},
+{
+  "courseCode": "CPA",
+  "name": "CPA (Certified Public Accountant) Level I-III"
+},
+{
+  "courseCode": "DJMM",
+  "name": "Diploma in Journalism & Mass Media Studies"
+},
+{
+  "courseCode": "DCJ",
+  "name": "Diploma in Carpentry and Joinery"
+},
+{
+  "courseCode": "GB1",
+  "name": "GERMAN B1"
+},
+{
+  "courseCode": "MA1",
+  "name": "MUSIC ADVANCE LEVEL"
+},
+{
+  "courseCode": "DACC",
+  "name": "Diploma in Accountancy"
+},
+{
+  "courseCode": "GA2",
+  "name": "GERMAN A2"
+},
+{
+  "courseCode": "SSIE",
+  "name": "Smart Systems and IoT Engineering"
+},
+{
+  "courseCode": "DBM",
+  "name": "Diploma in Business Management"
+},
+{
+  "courseCode": "CNDM",
+  "name": "Certificate in Nutrition & Dietetics Management"
+},
+{
+  "courseCode": "NUR",
+  "name": "Nurse Aide"
+},
+{
+  "courseCode": "CLIS",
+  "name": "Certificate in Library and Information Science"
+},
+{
+  "courseCode": "CCDS",
+  "name": "Certificate in Community Health Development & Social Work"
+},
+{
+  "courseCode": "DCOU",
+  "name": "Diploma in Counselling"
+},
+{
+  "courseCode": "CJOUR",
+  "name": "Certificate in Journalism"
+},
+{
+  "courseCode": "CICT",
+  "name": "Certificate in ICT"
+},
+{
+  "courseCode": "CBM",
+  "name": "Certificate in Business Management"
+},
+{
+  "courseCode": "DCDS",
+  "name": "Diploma in Community Health Development & Social Work"
+},
+{
+  "courseCode": "DBTEC",
+  "name": "Diploma in Building and Construction Technology"
+},
+{
+  "courseCode": "ACA",
+  "name": "Advanced Computer Applications "
+},
+{
+  "courseCode": "DSCM",
+  "name": "Diploma in Supply Chain Management"
+},
+{
+  "courseCode": "AFBS",
+  "name": "Artisan in Food & Beverage Production Sales & Service Management"
+},
+{
+  "courseCode": "CAE",
+  "name": "Certificate in Automotive Engineering"
+},
+{
+  "courseCode": "AWF",
+  "name": "Artisan in Welding & Fabrication"
+}]
