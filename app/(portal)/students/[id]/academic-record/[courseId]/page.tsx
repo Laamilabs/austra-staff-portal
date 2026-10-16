@@ -433,11 +433,12 @@ export default function AcademicRecordPage({ params }: PageProps) {
         const agg = aggregateByStudent(results)[0];
         if (!agg) return map;
 
-        for (const ua of agg.units) {
+        const courseUnits = agg.courses.find((c) => c.courseId === courseId)?.units ?? [];
+        for (const ua of courseUnits) {
             map.set(ua.unitId, ua);
         }
         return map;
-    }, [results]);
+    }, [results, courseId]);
 
     /** Course-wide roll-up for the hero stats. */
     const overall = useMemo(() => {
@@ -911,3 +912,5 @@ function HeroStat({
         </div>
     );
 }
+
+
