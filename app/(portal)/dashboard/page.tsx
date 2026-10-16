@@ -380,7 +380,7 @@ function KpiTile({
             </p>
           )}
         </div>
-       
+
       </div>
     </div>
   );
@@ -541,8 +541,8 @@ function ApplicationsSection({
                   {showGrowth && (
                     <span
                       className={`ml-1.5 inline-flex items-center gap-0.5 font-semibold ${growth >= 0
-                          ? "text-emerald-600 dark:text-emerald-400"
-                          : "text-rose-600 dark:text-rose-400"
+                        ? "text-emerald-600 dark:text-emerald-400"
+                        : "text-rose-600 dark:text-rose-400"
                         }`}
                     >
                       {growth >= 0 ? (
@@ -973,37 +973,185 @@ export default function DashboardPage() {
               <Chapter
                 n="01"
                 title="People"
-                subtitle="Who the institution serves and who teaches them"
+                subtitle="The people, programs and structure behind the institution"
+                action={
+                  <Link
+                    href="/students"
+                    className={`inline-flex items-center gap-1 rounded-sm text-xs font-semibold text-[#082B66] hover:underline dark:text-orange-400 ${FOCUS_RING}`}
+                  >
+                    View students
+                    <ChevronRight size={14} />
+                  </Link>
+                }
               />
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
-                <KpiTile
-                  label="Students"
-                  value={students}
-                  loading={loading && students === undefined}
-                  icon={GraduationCap}
-                  variant="navy"
-                />
-                <KpiTile
-                  label="Faculty"
-                  value={kpis?.faculty.total}
-                  loading={loading && !kpis}
-                  icon={UserCog}
-                  variant="orange"
-                />
-                <KpiTile
-                  label="Courses"
-                  value={courses}
-                  loading={loading && !kpis}
-                  icon={BookOpen}
-                  variant="navy"
-                />
-                <KpiTile
-                  label="Departments"
-                  value={kpis?.departments.total}
-                  loading={loading && !kpis}
-                  icon={Building2}
-                  variant="orange"
-                />
+
+              <div className="grid gap-4 lg:grid-cols-12">
+                {/* Primary student metric */}
+                <div className={`${CARD} relative overflow-hidden p-5 sm:p-6 lg:col-span-5`}>
+                  <div className="absolute right-0 top-0 h-28 w-28 translate-x-8 -translate-y-8 rounded-full bg-orange-400/10" />
+                  <div className="absolute bottom-0 right-0 h-1 w-24 bg-orange-400" />
+
+                  <div className="relative">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-sm bg-[#082B66] text-white">
+                        <GraduationCap size={21} />
+                      </div>
+
+                      <span className="rounded-sm bg-orange-400/10 px-2 py-1 text-[11px] font-semibold uppercase tracking-wider text-orange-600 dark:text-orange-400">
+                        Students
+                      </span>
+                    </div>
+
+                    <div className="mt-8">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
+                        Registered learners
+                      </p>
+
+                      {loading && students === undefined ? (
+                        <Skeleton className="mt-2 h-12 w-32" />
+                      ) : (
+                        <p className="mt-1 text-5xl font-semibold tracking-tight text-[#082B66] dark:text-white sm:text-6xl">
+                          {students !== undefined ? students.toLocaleString() : "—"}
+                        </p>
+                      )}
+
+                      <p className="mt-2 max-w-sm text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+                        Learners currently represented in the institution's student records.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Supporting metrics */}
+                <div className="grid grid-cols-2 gap-4 lg:col-span-7">
+                  {/* Faculty */}
+                  <div
+                    className={`${CARD} group relative overflow-hidden p-4 transition-shadow hover:shadow-md sm:p-5`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-orange-400/15 text-orange-600 dark:text-orange-400">
+                        <UserCog size={19} />
+                      </div>
+
+                      <span className="h-1.5 w-1.5 rounded-full bg-orange-400" />
+                    </div>
+
+                    <div className="mt-6">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                        Faculty
+                      </p>
+
+                      {loading && !kpis ? (
+                        <Skeleton className="mt-2 h-9 w-20" />
+                      ) : (
+                        <p className="mt-1 text-3xl font-semibold tracking-tight text-[#082B66] dark:text-white">
+                          {kpis?.faculty.total !== undefined
+                            ? kpis.faculty.total.toLocaleString()
+                            : "—"}
+                        </p>
+                      )}
+
+                      <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                        Teaching staff
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Courses */}
+                  <div
+                    className={`${CARD} group relative overflow-hidden p-4 transition-shadow hover:shadow-md sm:p-5`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-[#082B66]/10 text-[#082B66] dark:bg-white/10 dark:text-white">
+                        <BookOpen size={19} />
+                      </div>
+
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#082B66]" />
+                    </div>
+
+                    <div className="mt-6">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                        Courses
+                      </p>
+
+                      {loading && !kpis ? (
+                        <Skeleton className="mt-2 h-9 w-20" />
+                      ) : (
+                        <p className="mt-1 text-3xl font-semibold tracking-tight text-[#082B66] dark:text-white">
+                          {courses !== undefined ? courses.toLocaleString() : "—"}
+                        </p>
+                      )}
+
+                      <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                        Active programs
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Departments */}
+                  <div
+                    className={`${CARD} group relative overflow-hidden p-4 transition-shadow hover:shadow-md sm:p-5`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-[#082B66]/10 text-[#082B66] dark:bg-white/10 dark:text-white">
+                        <Building2 size={19} />
+                      </div>
+
+                      <span className="h-1.5 w-1.5 rounded-full bg-orange-400" />
+                    </div>
+
+                    <div className="mt-6">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                        Departments
+                      </p>
+
+                      {loading && !kpis ? (
+                        <Skeleton className="mt-2 h-9 w-20" />
+                      ) : (
+                        <p className="mt-1 text-3xl font-semibold tracking-tight text-[#082B66] dark:text-white">
+                          {kpis?.departments.total !== undefined
+                            ? kpis.departments.total.toLocaleString()
+                            : "—"}
+                        </p>
+                      )}
+
+                      <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                        Academic divisions
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Student-to-course context */}
+                  <div
+                    className={`${CARD} relative overflow-hidden p-4 sm:p-5`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-orange-400/15 text-orange-600 dark:text-orange-400">
+                        <Users size={19} />
+                      </div>
+
+                      {perStudent && (
+                        <span className="text-xs font-semibold text-orange-600 dark:text-orange-400">
+                          {perStudent}:1
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="mt-6">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                        Enrollment density
+                      </p>
+
+                      <p className="mt-1 text-3xl font-semibold tracking-tight text-[#082B66] dark:text-white">
+                        {perStudent ?? "—"}
+                      </p>
+
+                      <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                        Enrollments per student
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </section>
 
@@ -1291,8 +1439,8 @@ export default function DashboardPage() {
                         {monthDelta !== null && (
                           <span
                             className={`mt-1.5 inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-xs font-semibold ${monthDelta >= 0
-                                ? "bg-orange-400/15 text-orange-700 dark:text-orange-300"
-                                : "bg-rose-500/10 text-rose-700 dark:text-rose-300"
+                              ? "bg-orange-400/15 text-orange-700 dark:text-orange-300"
+                              : "bg-rose-500/10 text-rose-700 dark:text-rose-300"
                               }`}
                           >
                             {monthDelta >= 0 ? (
