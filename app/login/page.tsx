@@ -20,17 +20,19 @@ export default function LoginPage() {
       </div>
 
       {/* Fluid container with ultrawide limits */}
-      <div className="mx-auto grid w-full max-w-[1800px] flex-1 grid-cols-1 items-center gap-10 px-5 py-10 sm:px-8 md:px-12 lg:grid-cols-[minmax(0,1fr)_minmax(380px,440px)] lg:gap-12 lg:px-16 xl:gap-20 xl:px-20 2xl:gap-28 2xl:px-24 min-[2000px]:px-28 min-[2400px]:px-32">
-        <LoginHero />
+      <div className="mx-auto grid w-full max-w-[1800px] flex-1 grid-cols-1 items-center gap-8 px-3 py-6 min-[360px]:px-4 min-[480px]:gap-10 min-[480px]:px-6 sm:px-8 sm:py-10 md:px-12 lg:grid-cols-[minmax(0,1fr)_minmax(380px,440px)] lg:gap-12 lg:px-16 xl:gap-20 xl:px-20 2xl:gap-28 2xl:px-24 min-[2000px]:px-28 min-[2400px]:px-32">
         <div className="mx-auto w-full max-w-110 lg:mx-0 lg:justify-self-end">
           <LoginForm />
         </div>
+        <div className="hidden min-[640px]:block lg:order-first">
+          <LoginHero />
+        </div>
       </div>
 
-      <footer className="px-5 pb-5 pt-2 text-center text-xs text-zinc-500 dark:text-zinc-400 sm:px-8">
-        © {new Date().getFullYear()} Austra Training Institute
-        <span className="mx-2">·</span>
-        Need help? Contact your administrator.
+      <footer className="flex flex-wrap justify-center gap-x-2 px-3 pb-4 pt-2 text-center text-[11px] leading-5 text-zinc-500 dark:text-zinc-400 min-[360px]:px-4 min-[360px]:text-xs sm:px-8 sm:pb-5">
+        <span>© {new Date().getFullYear()} Austra Training Institute</span>
+        <span>·</span>
+        <span>Need help? Contact your administrator.</span>
       </footer>
     </main>
   );
