@@ -66,21 +66,18 @@ export default function PortalShell({ children }: PortalShellProps) {
     setBackupError("");
   };
 
-  // Restore the saved preference. With no saved value, start as a rail on
-  // narrower desktops so the working area gets the room.
+
+  // Always start expanded on desktop and collapsed on mobile.
   useEffect(() => {
-    try {
-      const saved = window.localStorage.getItem(STORAGE_KEY);
-      if (saved !== null) {
-        setCollapsed(saved === "1");
-      } else if (window.innerWidth < AUTO_COLLAPSE_BELOW) {
-        setCollapsed(true);
-      }
-    } catch {
-      /* storage unavailable: keep the default */
+    if (window.innerWidth >= 1024) {
+      setCollapsed(false);
+    } else {
+      setCollapsed(true);
     }
+
     setHydrated(true);
   }, []);
+
 
   // Remember the choice. Waits for hydration so the default never overwrites it.
   useEffect(() => {
@@ -161,19 +158,18 @@ export default function PortalShell({ children }: PortalShellProps) {
 
       {/* Content column: follows the sidebar width (64px rail / 256px full) */}
       <div
-        className={`relative z-10 flex min-h-screen flex-col pt-16 transition-[padding] duration-300 ease-in-out lg:pt-0 ${
-          collapsed ? "lg:pl-16" : "lg:pl-64"
-        }`}
+        className={`relative z-10 flex min-h-screen flex-col pt-16 transition-[padding] duration-300 ease-in-out lg:pt-0 ${collapsed ? "lg:pl-16" : "lg:pl-64"
+          }`}
       >
         <div className="flex flex-1 flex-col lg:m-2 lg:ml-0 lg:min-h-[calc(100vh-1rem)] lg:rounded-sm lg:border lg:border-zinc-200/80 lg:bg-white/75 lg:shadow-sm dark:lg:border-white/10 dark:lg:bg-zinc-900/60 dark:lg:shadow-none">
-          
-<main
-  id="main-content"
-  tabIndex={-1}
-  className="mx-auto w-full max-w-full flex-1 px-4 py-6 outline-none transition-[max-width] duration-300 ease-in-out sm:px-6 lg:px-8"
->
-  {children}
-</main>
+
+          <main
+            id="main-content"
+            tabIndex={-1}
+            className="mx-auto w-full max-w-full flex-1 px-4 py-6 outline-none transition-[max-width] duration-300 ease-in-out sm:px-6 lg:px-8"
+          >
+            {children}
+          </main>
 
         </div>
       </div>
