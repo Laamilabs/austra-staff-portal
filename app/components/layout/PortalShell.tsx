@@ -166,15 +166,15 @@ export default function PortalShell({ children }: PortalShellProps) {
         }`}
       >
         <div className="flex flex-1 flex-col lg:m-2 lg:ml-0 lg:min-h-[calc(100vh-1rem)] lg:rounded-sm lg:border lg:border-zinc-200/80 lg:bg-white/75 lg:shadow-sm dark:lg:border-white/10 dark:lg:bg-zinc-900/60 dark:lg:shadow-none">
-          <main
-            id="main-content"
-            tabIndex={-1}
-            className={`mx-auto w-full flex-1 px-4 py-6 outline-none transition-[max-width] duration-300 ease-in-out sm:px-6 lg:px-8 ${
-              collapsed ? "max-w-[100rem]" : "max-w-full"
-            }`}
-          >
-            {children}
-          </main>
+          
+<main
+  id="main-content"
+  tabIndex={-1}
+  className="mx-auto w-full max-w-full flex-1 px-4 py-6 outline-none transition-[max-width] duration-300 ease-in-out sm:px-6 lg:px-8"
+>
+  {children}
+</main>
+
         </div>
       </div>
     </div>
