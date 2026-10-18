@@ -49,18 +49,20 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="w-full rounded-sm border border-white/60 bg-white/70 p-8 shadow-[0_20px_50px_-12px_rgba(11,30,61,0.25)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0B1E3D]/60 dark:shadow-black/40">
+    <div className="w-full rounded-sm border border-white/70 bg-white/80 p-5 shadow-[0_20px_60px_-20px_rgba(11,30,61,0.25)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0B1E3D]/70 dark:shadow-black/40 sm:p-7 lg:p-8">
       {/* Identity, like the Windows sign-in avatar */}
       <div className="flex flex-col items-center text-center">
         <span className="flex h-20 w-auto items-center justify-center overflow-hidden p-2 ring-1 ring-[#0B1E3D]/10 dark:ring-white/15">
-          <Image
-            src="/logo.png"
-            alt="Austra Training Institute"
-            width={192}
-            height={96}
-            priority
-            className="h-full w-full object-contain mix-blend-multiply"
-          />
+          <span className="flex h-20 w-40 items-center justify-center overflow-hidden p-2 ring-1 ring-[#0B1E3D]/10 dark:ring-white/15">
+            <Image
+              src="/logo.png"
+              alt="Austra Training Institute"
+              width={192}
+              height={96}
+              priority
+              className="h-full w-full object-contain"
+            />
+          </span>
         </span>
         <h1 className="mt-4 text-2xl font-semibold tracking-tight text-[#0B1E3D] dark:text-white">
           Sign in
@@ -116,7 +118,7 @@ export default function LoginForm() {
             </label>
             <Link
               href="/forgot-password"
-              className="rounded-sm text-xs font-medium text-orange-600 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-orange-400 dark:text-orange-400"
+              className="rounded-sm text-xs font-medium text-orange-600 hover:underline focus-visible:outline focus-visible:outline-orange-400 dark:text-orange-400"
             >
               Forgot password?
             </Link>
@@ -145,7 +147,7 @@ export default function LoginForm() {
               onClick={() => setShowPassword((v) => !v)}
               aria-label={showPassword ? "Hide password" : "Show password"}
               aria-pressed={showPassword}
-              className="absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-sm text-zinc-500 hover:bg-zinc-900/5 hover:text-[#0B1E3D] focus-visible:outline focus-visible:outline-2 focus-visible:outline-orange-400 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white"
+              className="absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-sm text-zinc-500 hover:bg-zinc-900/5 hover:text-[#0B1E3D] focus-visible:outline focus-visible:outline-orange-400 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white"
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
@@ -160,7 +162,7 @@ export default function LoginForm() {
         <button
           type="submit"
           disabled={isLoading}
-          className="flex h-11 w-full items-center justify-center gap-2 rounded-sm bg-orange-400 text-sm font-semibold text-[#0B1E3D] shadow-sm transition hover:bg-orange-300 active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B1E3D] disabled:cursor-not-allowed disabled:opacity-70 dark:focus-visible:outline-white"
+          className="flex h-11 w-full items-center justify-center gap-2 rounded-sm bg-orange-400 text-sm font-semibold text-[#0B1E3D] shadow-sm transition hover:bg-orange-300 active:scale-[0.99] focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-[#0B1E3D] disabled:cursor-not-allowed disabled:opacity-70 dark:focus-visible:outline-white"
         >
           {isLoading ? (
             <>
