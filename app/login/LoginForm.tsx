@@ -8,11 +8,10 @@ import { AlertCircle, ArrowUpFromLine, Eye, EyeOff, Loader2, Lock, Mail } from "
 import { useAuth } from "../context/AuthContext";
 import { DATABASE_BACKUP_PROMPT_KEY } from "../types/db-backup";
 
-// Windows 11 style field: subtle border, thicker accent line on the bottom edge when focused
 const FIELD =
-  "h-11 w-full rounded-sm border border-zinc-300 border-b-zinc-500 bg-white/80 pl-10 pr-3 text-sm text-[#0B1E3D] " +
-  "placeholder:text-zinc-400 transition-shadow focus:border-b-orange-400 focus:outline-none focus:shadow-[0_1px_0_0_#FB923C] " +
-  "dark:border-white/10 dark:border-b-white/40 dark:bg-white/5 dark:text-white dark:placeholder:text-zinc-500 dark:focus:border-b-orange-400";
+  "h-11 min-w-0 w-full rounded-sm border border-[#0B1E3D]/15 bg-[#F8FAFD] pl-10 pr-3 text-sm text-[#0B1E3D] " +
+  "placeholder:text-zinc-400 transition focus:border-orange-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-400/20 " +
+  "dark:border-white/15 dark:bg-white/5 dark:text-white dark:placeholder:text-zinc-500 dark:focus:border-orange-400";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -49,25 +48,22 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="w-full rounded-sm border border-white/70 bg-white/80 p-5 shadow-[0_20px_60px_-20px_rgba(11,30,61,0.25)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0B1E3D]/70 dark:shadow-black/40 sm:p-7 lg:p-8">
-      {/* Identity, like the Windows sign-in avatar */}
+    <div className="w-full min-w-0 rounded-sm border border-[#0B1E3D]/10 bg-white p-3.5 shadow-[0_18px_55px_-28px_rgba(11,30,61,0.45)] min-[360px]:p-5 sm:p-7 lg:p-8 dark:border-white/10 dark:bg-[#0B1E3D]/85 dark:shadow-black/40">
       <div className="flex flex-col items-center text-center">
-        <span className="flex h-20 w-auto items-center justify-center overflow-hidden p-2 ring-1 ring-[#0B1E3D]/10 dark:ring-white/15">
-          <span className="flex h-20 w-40 items-center justify-center overflow-hidden p-2 ring-1 ring-[#0B1E3D]/10 dark:ring-white/15">
-            <Image
-              src="/logo.png"
-              alt="Austra Training Institute"
-              width={192}
-              height={96}
-              priority
-              className="h-full w-full object-contain"
-            />
-          </span>
+        <span className="flex h-16 w-full max-w-40 items-center justify-center sm:h-20">
+          <Image
+            src="/logo.png"
+            alt="Austra Training Institute"
+            width={192}
+            height={96}
+            priority
+            className="h-full w-full object-contain"
+          />
         </span>
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight text-[#0B1E3D] dark:text-white">
+        <h1 className="mt-3 text-xl font-semibold tracking-tight text-[#0B1E3D] min-[360px]:text-2xl dark:text-white">
           Sign in
         </h1>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="mt-1 text-xs text-zinc-500 min-[360px]:text-sm dark:text-zinc-400">
           to the Austra Staff Portal
         </p>
       </div>
@@ -85,13 +81,13 @@ export default function LoginForm() {
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className="mt-6 space-y-5" noValidate={false}>
+      <form onSubmit={handleSubmit} className="mt-5 space-y-4 min-[360px]:mt-6 min-[360px]:space-y-5" noValidate={false}>
         <div>
           <label htmlFor="email" className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-300">
             Email
           </label>
           <div className="relative">
-            <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-sky-500" />
+            <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#0B1E3D]/55" />
             <input
               id="email"
               name="email"
@@ -112,19 +108,19 @@ export default function LoginForm() {
         </div>
 
         <div>
-          <div className="mb-1.5 flex items-center justify-between">
+          <div className="mb-1.5 flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
             <label htmlFor="password" className="text-xs font-medium text-zinc-600 dark:text-zinc-300">
               Password
             </label>
             <Link
               href="/forgot-password"
-              className="rounded-sm text-xs font-medium text-orange-600 hover:underline focus-visible:outline focus-visible:outline-orange-400 dark:text-orange-400"
+              className="rounded-sm text-[11px] font-medium text-orange-700 hover:underline focus-visible:outline focus-visible:outline-orange-400 min-[360px]:text-xs dark:text-orange-400"
             >
               Forgot password?
             </Link>
           </div>
           <div className="relative">
-            <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-violet-500" />
+            <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-orange-600" />
             <input
               id="password"
               name="password"
@@ -162,7 +158,7 @@ export default function LoginForm() {
         <button
           type="submit"
           disabled={isLoading}
-          className="flex h-11 w-full items-center justify-center gap-2 rounded-sm bg-orange-400 text-sm font-semibold text-[#0B1E3D] shadow-sm transition hover:bg-orange-300 active:scale-[0.99] focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-[#0B1E3D] disabled:cursor-not-allowed disabled:opacity-70 dark:focus-visible:outline-white"
+          className="flex h-11 w-full items-center justify-center gap-2 rounded-sm bg-[#0B1E3D] text-sm font-semibold text-white shadow-sm transition hover:bg-[#16345F] active:scale-[0.99] focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-orange-400 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-orange-400 dark:text-[#0B1E3D] dark:hover:bg-orange-300 dark:focus-visible:outline-white"
         >
           {isLoading ? (
             <>
