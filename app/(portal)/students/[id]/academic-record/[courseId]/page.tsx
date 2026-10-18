@@ -559,7 +559,7 @@ export default function AcademicRecordPage({ params }: PageProps) {
 
     return (
         <main className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-            <div className="mx-auto max-w-400 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+            <div className="mx-auto max-w-full px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
                 {/* BACK NAV */}
                 <div className="flex items-center justify-between gap-4">
                     <Link

@@ -48,7 +48,7 @@ export default function Home() {
 
       {/* Main Content Overlay */}
       <section className="relative z-10 flex min-h-screen items-center py-12 sm:py-20">
-        <div className="mx-auto w-full max-w-400 px-4 sm:px-6 lg:px-8 2xl:max-w-384">
+        <div className="mx-auto w-full max-w-full px-4 sm:px-6 lg:px-8 2xl:max-w-384">
           <div className="max-w-3xl">
             <p className="text-xs sm:text-sm font-semibold uppercase tracking-[0.15em] text-orange-500 dark:text-orange-400">
               Austra Training Institute

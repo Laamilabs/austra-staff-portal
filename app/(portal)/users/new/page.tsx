@@ -134,7 +134,7 @@ function NewUserForm() {
   const backLink = studentId ? `/students/${studentId}` : "/users";
 
   return (
-    <div className="max-w-400 mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div className="max-w-full mx-auto py-8 px-4 sm:px-6 lg:px-8">
       {/* Header & Back Button */}
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center space-x-3">

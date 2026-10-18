@@ -317,7 +317,7 @@ export default function TransactionsPage() {
     // -----------------------------------------------------------------------
 
     return (
-        <div className="mx-auto w-full max-w-400l px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-fulll px-4 py-6 sm:px-6 lg:px-8">
             <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-start gap-3">
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-orange-400/15 text-orange-500 dark:bg-orange-400/10 dark:text-orange-300">

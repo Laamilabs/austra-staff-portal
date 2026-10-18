@@ -144,7 +144,7 @@ function Unauthorized() {
 
     return (
         <main className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-            <div className="mx-auto flex min-h-[70vh] max-w-400 items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+            <div className="mx-auto flex min-h-[70vh] max-w-full items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
                 <section className="w-full max-w-lg">
                     {/* Top accent */}
                     <div className="h-1 bg-orange-400" />

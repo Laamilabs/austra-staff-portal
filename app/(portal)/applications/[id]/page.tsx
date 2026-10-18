@@ -378,7 +378,7 @@ export default function ApplicationDetailPage() {
         <Shell>
             {/* Sticky top bar: always shows where you are and the current status */}
             <div className="sticky top-0 z-20 border-b border-zinc-200/80 bg-[#EEF2F9]/80 backdrop-blur-xl dark:border-white/10 dark:bg-[#050D1B]/80">
-                <div className="mx-auto flex h-14 max-w-400 items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+                <div className="mx-auto flex h-14 max-w-full items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
                     <div className="flex min-w-0 items-center gap-3">
                         <Link
                             href="/applications"
@@ -412,7 +412,7 @@ export default function ApplicationDetailPage() {
                 </div>
             </div>
 
-            <div className="mx-auto max-w-400 px-4 py-6 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-full px-4 py-6 sm:px-6 lg:px-8">
                 {/* Summary: who, what, and how to reach them */}
                 <section className={`${SURFACE} flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between`}>
                     <div className="flex min-w-0 items-center gap-4">
@@ -912,7 +912,7 @@ function DetailSkeleton() {
     const bar = "animate-pulse rounded-sm bg-zinc-200 dark:bg-white/10";
     return (
         <Shell>
-            <div className="mx-auto max-w-400 px-4 py-6 sm:px-6 lg:px-8" aria-busy="true" aria-label="Loading application">
+            <div className="mx-auto max-w-full px-4 py-6 sm:px-6 lg:px-8" aria-busy="true" aria-label="Loading application">
                 <div className={`${SURFACE} flex items-center gap-4 p-5`}>
                     <div className={`h-14 w-14 ${bar}`} />
                     <div className="space-y-2">

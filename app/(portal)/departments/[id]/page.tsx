@@ -62,7 +62,7 @@ export default function DepartmentDetailsPage() {
     if (error || !department) {
         return (
             <main className="min-h-full p-4 sm:p-6 lg:p-8">
-                <div className="mx-auto max-w-400">
+                <div className="mx-auto max-w-full">
                     <button
                         type="button"
                         onClick={() => router.back()}
@@ -104,7 +104,7 @@ export default function DepartmentDetailsPage() {
 
     return (
         <main className="min-h-full p-4 sm:p-6 lg:p-8">
-            <div className="mx-auto max-w-400">
+            <div className="mx-auto max-w-full">
                 {/* Back */}
                 <button
                     type="button"
@@ -410,7 +410,7 @@ function FacultyRow({ member }: FacultyRowProps) {
 function DepartmentDetailsSkeleton() {
     return (
         <main className="min-h-full p-4 sm:p-6 lg:p-8">
-            <div className="mx-auto max-w-400 animate-pulse">
+            <div className="mx-auto max-w-full animate-pulse">
                 <div className="mb-6 h-5 w-40 rounded-sm bg-zinc-200 dark:bg-zinc-800" />
 
                 <section className="overflow-hidden rounded-sm border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">

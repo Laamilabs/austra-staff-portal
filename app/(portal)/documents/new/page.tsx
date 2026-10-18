@@ -346,7 +346,7 @@ function CreateDocumentForm() {
   };
 
   return (
-    <div className="mx-auto max-w-400 space-y-6 p-6">
+    <div className="mx-auto max-w-full space-y-6 p-6">
       {/* Top Header & Navigation */}
       <div>
         <Link

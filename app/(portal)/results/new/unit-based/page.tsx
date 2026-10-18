@@ -384,7 +384,7 @@ export default function UnitBasedResultsPage() {
 
     return (
         <main className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-            <div className="mx-auto max-w-400 space-y-6 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+            <div className="mx-auto max-w-full space-y-6 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
                 {/* BACK */}
                 <Link
                     href="/results"

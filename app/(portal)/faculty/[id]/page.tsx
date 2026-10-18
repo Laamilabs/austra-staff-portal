@@ -163,7 +163,7 @@ export default function FacultyDetailPage() {
 
     return (
         <main className="min-h-full bg-zinc-50 dark:bg-zinc-950">
-            <div className="mx-auto max-w-400 px-4 py-6 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-full px-4 py-6 sm:px-6 lg:px-8">
                 {/* Navigation & Action Bar */}
                 <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <Link

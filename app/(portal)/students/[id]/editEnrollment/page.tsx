@@ -260,7 +260,7 @@ export default function EditEnrollmentPage() {
     if (loading) {
         return (
             <main className="min-h-[calc(100vh-80px)] bg-zinc-50 px-4 py-8 dark:bg-zinc-950">
-                <div className="mx-auto flex max-w-400 items-center justify-center py-24">
+                <div className="mx-auto flex max-w-full items-center justify-center py-24">
                     <div className="flex flex-col items-center gap-3 text-zinc-500 dark:text-zinc-400">
                         <Loader2
                             size={28}
@@ -279,7 +279,7 @@ export default function EditEnrollmentPage() {
     if (error && !enrollment) {
         return (
             <main className="min-h-[calc(100vh-80px)] bg-zinc-50 px-4 py-8 dark:bg-zinc-950">
-                <div className="mx-auto max-w-400">
+                <div className="mx-auto max-w-full">
                     <Link
                         href={`/students/${studentId}`}
                         className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-[#0B1E3D] transition hover:text-orange-600 dark:text-white dark:hover:text-orange-400"
@@ -313,7 +313,7 @@ export default function EditEnrollmentPage() {
 
     return (
         <main className="min-h-[calc(100vh-80px)] bg-zinc-50 px-4 py-8 dark:bg-zinc-950 sm:px-6">
-            <div className="mx-auto max-w-400">
+            <div className="mx-auto max-w-full">
                 {/* Back */}
                 <Link
                     href={`/students/${studentId}`}

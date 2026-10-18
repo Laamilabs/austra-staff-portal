@@ -309,7 +309,7 @@ export default function EditDocumentPage() {
   }
 
   return (
-    <div className="mx-auto max-w-400 space-y-6 p-6">
+    <div className="mx-auto max-w-full space-y-6 p-6">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>

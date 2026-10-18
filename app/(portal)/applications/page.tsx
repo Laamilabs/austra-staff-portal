@@ -177,7 +177,7 @@ const isStatus = (v: string | null): v is ApplicationStatus =>
 
 export default function ApplicationsPage() {
     return (
-        <Suspense fallback={<Shell><div className="mx-auto max-w-400 px-4 py-6 sm:px-6 lg:px-8"><ListSkeleton /></div></Shell>}>
+        <Suspense fallback={<Shell><div className="mx-auto max-w-full px-4 py-6 sm:px-6 lg:px-8"><ListSkeleton /></div></Shell>}>
             <ApplicationsView />
         </Suspense>
     );
@@ -324,7 +324,7 @@ function ApplicationsView() {
     // ----- render -----------------------------------------------------------
     return (
         <Shell>
-            <div className="mx-auto max-w-400 px-4 py-6 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-full px-4 py-6 sm:px-6 lg:px-8">
                 {/* Header */}
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-3">

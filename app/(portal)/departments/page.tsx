@@ -109,7 +109,7 @@ export default function DepartmentsPage() {
 
   return (
     <main className="min-h-full bg-zinc-50/10 dark:bg-zinc-950/10">
-      <div className="mx-auto max-w-400 px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-full px-4 py-6 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div>

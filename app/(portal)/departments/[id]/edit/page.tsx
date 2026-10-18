@@ -150,7 +150,7 @@ export default function EditDepartmentPage() {
   return (
     <RequireRole role="admin">
       <main className="min-h-full bg-zinc-50 p-4 dark:bg-zinc-950 sm:p-6 lg:p-8">
-        <div className="mx-auto max-w-400">
+        <div className="mx-auto max-w-full">
           {/* Back Button */}
           <button
             type="button"

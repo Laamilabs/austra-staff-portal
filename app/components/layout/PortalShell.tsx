@@ -170,7 +170,7 @@ export default function PortalShell({ children }: PortalShellProps) {
             id="main-content"
             tabIndex={-1}
             className={`mx-auto w-full flex-1 px-4 py-6 outline-none transition-[max-width] duration-300 ease-in-out sm:px-6 lg:px-8 ${
-              collapsed ? "max-w-[100rem]" : "max-w-400"
+              collapsed ? "max-w-[100rem]" : "max-w-full"
             }`}
           >
             {children}
