@@ -21,8 +21,9 @@ import { CloudinaryUpload } from "@/app/components/ui/cloudinary";
 import DeleteUserModal from "./DeleteUserModal";
 import ChangePasswordCard from "./ChangePasswordCard";
 import { getUserInitials, getRoleBadge, getUserId } from "./getRoleBadge";
+import RequireRole from "@/app/components/navigation/RequireRole";
 
-export default function UserDetailPage() {
+function UserDetailContent() {
     const params = useParams();
     const router = useRouter();
     const userId = params.id as string;
@@ -409,5 +410,13 @@ export default function UserDetailPage() {
                 onConfirm={handleDelete}
             />
         </div>
+    );
+}
+
+export default function UserDetailPage() {
+    return (
+        <RequireRole role="admin">
+            <UserDetailContent />
+        </RequireRole>
     );
 }

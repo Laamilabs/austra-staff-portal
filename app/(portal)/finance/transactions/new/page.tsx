@@ -32,6 +32,7 @@ import {
 } from "@/app/types/fee-transaction";
 import { StudentFee, studentFeeApi } from "@/app/types/student-fee";
 import type { Student } from "@/app/types/students";
+import RequireRole from "@/app/components/navigation/RequireRole";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -134,7 +135,7 @@ function round2(n: number): number {
 // Page
 // ---------------------------------------------------------------------------
 
-export default function NewTransactionPage() {
+function NewTransactionContent() {
     const router = useRouter();
 
     // Student selection
@@ -771,5 +772,13 @@ export default function NewTransactionPage() {
                 </form>
             )}
         </div>
+    );
+}
+
+export default function NewTransactionPage() {
+    return (
+        <RequireRole roles={["admin", "registrar"]}>
+            <NewTransactionContent />
+        </RequireRole>
     );
 }

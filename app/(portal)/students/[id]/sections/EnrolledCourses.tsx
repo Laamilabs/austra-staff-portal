@@ -31,6 +31,7 @@ import DateChip from "./datechip";
 import SelectCourse from "@/app/(portal)/courses/selectCourse";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { DatePicker } from "../../new/components/DatePicker";
+import RequireRoleInline from "@/app/components/navigation/RequiredRoleInline";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -635,58 +636,60 @@ export default function EnrolledCourses({
                                     </div>
 
                                     {/* Actions */}
-                                    <div className="flex items-center gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-800 lg:flex-col lg:items-stretch lg:border-t-0 lg:pt-0">
-                                        <button
-                                            type="button"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                navigateToAcademicRecord(courseItem);
-                                            }}
-                                            disabled={!courseIdString}
-                                            title="View student academic record and units"
-                                            className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm bg-blue-950 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-orange-400 dark:text-blue-950 dark:hover:bg-orange-300 lg:flex-none"
-                                        >
-                                            <FileText size={13} />
-                                            Academic Record
-                                        </button>
+                                    <RequireRoleInline roles={["admin", "registrar"]}>
+                                        <div className="flex items-center gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-800 lg:flex-col lg:items-stretch lg:border-t-0 lg:pt-0">
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    navigateToAcademicRecord(courseItem);
+                                                }}
+                                                disabled={!courseIdString}
+                                                title="View student academic record and units"
+                                                className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm bg-blue-950 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-orange-400 dark:text-blue-950 dark:hover:bg-orange-300 lg:flex-none"
+                                            >
+                                                <FileText size={13} />
+                                                Academic Record
+                                            </button>
 
-                                        <button
-                                            type="button"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                if (!courseItem._id) return;
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    if (!courseItem._id) return;
 
-                                                router.push(
-                                                    `/students/${studentId}/editEnrollment?courseId=${encodeURIComponent(
-                                                        courseItem._id,
-                                                    )}`,
-                                                );
-                                            }}
-                                            disabled={!canModify}
-                                            className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm border border-blue-950 px-4 py-2 text-xs font-semibold text-blue-950 transition-colors hover:bg-blue-950 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 disabled:cursor-not-allowed disabled:opacity-40 dark:border-orange-400 dark:text-orange-400 dark:hover:bg-orange-400 dark:hover:text-blue-950 lg:flex-none"
-                                        >
-                                            <Pencil size={13} />
-                                            Edit enrollment
-                                        </button>
+                                                    router.push(
+                                                        `/students/${studentId}/editEnrollment?courseId=${encodeURIComponent(
+                                                            courseItem._id,
+                                                        )}`,
+                                                    );
+                                                }}
+                                                disabled={!canModify}
+                                                className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm border border-blue-950 px-4 py-2 text-xs font-semibold text-blue-950 transition-colors hover:bg-blue-950 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 disabled:cursor-not-allowed disabled:opacity-40 dark:border-orange-400 dark:text-orange-400 dark:hover:bg-orange-400 dark:hover:text-blue-950 lg:flex-none"
+                                            >
+                                                <Pencil size={13} />
+                                                Edit enrollment
+                                            </button>
 
-                                        <button
-                                            type="button"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                requestRemove(courseItem);
-                                            }}
-                                            disabled={!canModify}
-                                            title={
-                                                canModify
-                                                    ? "Remove this enrollment"
-                                                    : "Cannot remove — enrollment has no id"
-                                            }
-                                            className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm border border-red-300 px-4 py-2 text-xs font-semibold text-red-600 transition-colors hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 disabled:cursor-not-allowed disabled:opacity-40 dark:border-red-900/60 dark:text-red-400 dark:hover:bg-red-950/40 lg:flex-none"
-                                        >
-                                            <Trash2 size={13} />
-                                            Remove
-                                        </button>
-                                    </div>
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    requestRemove(courseItem);
+                                                }}
+                                                disabled={!canModify}
+                                                title={
+                                                    canModify
+                                                        ? "Remove this enrollment"
+                                                        : "Cannot remove — enrollment has no id"
+                                                }
+                                                className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm border border-red-300 px-4 py-2 text-xs font-semibold text-red-600 transition-colors hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 disabled:cursor-not-allowed disabled:opacity-40 dark:border-red-900/60 dark:text-red-400 dark:hover:bg-red-950/40 lg:flex-none"
+                                            >
+                                                <Trash2 size={13} />
+                                                Remove
+                                            </button>
+                                        </div>
+                                    </RequireRoleInline>
                                 </li>
                             );
                         })}

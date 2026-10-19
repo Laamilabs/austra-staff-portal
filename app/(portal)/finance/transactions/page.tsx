@@ -24,6 +24,7 @@ import {
     TransactionStatus,
     feeTransactionApi,
 } from "@/app/types/fee-transaction";
+import RequireRole from "@/app/components/navigation/RequireRole";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -193,7 +194,7 @@ function formatTime(iso?: string): string {
 // Page
 // ---------------------------------------------------------------------------
 
-export default function TransactionsPage() {
+function TransactionsList() {
     const router = useRouter();
 
     const [transactions, setTransactions] = useState<FeeTransaction[]>([]);
@@ -517,8 +518,8 @@ export default function TransactionsPage() {
                                                 </span>
                                                 <span
                                                     className={`block text-[11px] ${dateOnly
-                                                            ? "italic text-zinc-400 dark:text-zinc-500"
-                                                            : "tabular-nums text-zinc-500 dark:text-zinc-400"
+                                                        ? "italic text-zinc-400 dark:text-zinc-500"
+                                                        : "tabular-nums text-zinc-500 dark:text-zinc-400"
                                                         }`}
                                                 >
                                                     {dateOnly
@@ -582,6 +583,14 @@ export default function TransactionsPage() {
                 )}
             </div>
         </div>
+    );
+}
+
+export default function TransactionsPage() {
+    return (
+        <RequireRole roles={["admin", "registrar"]}>
+            <TransactionsList />
+        </RequireRole>
     );
 }
 

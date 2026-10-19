@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import api from "@/app/lib/api";
 import { User as UserType, UserRole } from "@/app/lib/types";
+import RequireRole from "@/app/components/navigation/RequireRole";
 
 /* ------------------------------------------------------------------ */
 /* Config                                                              */
@@ -147,7 +148,7 @@ function UserAvatar({
 /* Page                                                                */
 /* ------------------------------------------------------------------ */
 
-export default function UsersPage() {
+function UsersContent() {
   const [users, setUsers] = useState<UserType[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -511,5 +512,13 @@ export default function UsersPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function UsersPage() {
+  return (
+    <RequireRole role="admin">
+      <UsersContent />
+    </RequireRole>
   );
 }

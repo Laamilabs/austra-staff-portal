@@ -19,6 +19,7 @@ import {
 import { AccountStep } from "./_steps/AccountStep";
 import { CoursesStep, ReviewStep } from "./_steps/CoursesReviewSteps";
 import { PersonalStep, ContactStep, IdentificationStep } from "./_steps/DetailsSteps";
+import RequireRole from "@/app/components/navigation/RequireRole";
 
 // ============================================================================
 // Static copy
@@ -525,146 +526,148 @@ export default function NewStudentPage() {
                 {/* ============================================================ */}
                 {/* Main panel                                                   */}
                 {/* ============================================================ */}
-                <section className="flex min-w-0 flex-col">
-                    {/* Step header */}
-                    <div className="border-b border-zinc-200 px-6 py-6 dark:border-zinc-800 sm:px-10">
-                        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-orange-500 dark:text-orange-400">
-                            Step {stepIndex + 1} of {STEPS.length}
-                        </p>
-                        <h2 className="mt-1 text-xl font-semibold text-navy-900 dark:text-zinc-100 sm:text-2xl">
-                            {currentStep.label}
-                        </h2>
-                        {STEP_DESCRIPTIONS[currentStep.key] && (
-                            <p className="mt-1 text-sm text-zinc-900 dark:text-zinc-400">
-                                {STEP_DESCRIPTIONS[currentStep.key]}
+                <RequireRole roles={["admin", "registrar"]}>
+                    <section className="flex min-w-0 flex-col">
+                        {/* Step header */}
+                        <div className="border-b border-zinc-200 px-6 py-6 dark:border-zinc-800 sm:px-10">
+                            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-orange-500 dark:text-orange-400">
+                                Step {stepIndex + 1} of {STEPS.length}
                             </p>
-                        )}
-                    </div>
+                            <h2 className="mt-1 text-xl font-semibold text-navy-900 dark:text-zinc-100 sm:text-2xl">
+                                {currentStep.label}
+                            </h2>
+                            {STEP_DESCRIPTIONS[currentStep.key] && (
+                                <p className="mt-1 text-sm text-zinc-900 dark:text-zinc-400">
+                                    {STEP_DESCRIPTIONS[currentStep.key]}
+                                </p>
+                            )}
+                        </div>
 
-                    {/* Step content */}
-                    <div className="flex-1 px-6 py-6 sm:px-10 sm:py-8">
-                        {hasErrors && (
-                            <div
-                                role="alert"
-                                className="mb-6 rounded-sm border-l-4 border-orange-400 bg-orange-50 px-4 py-3 text-sm text-navy-900 dark:border-orange-500 dark:bg-orange-950/30 dark:text-orange-100"
-                            >
-                                Please fix the highlighted fields to continue.
+                        {/* Step content */}
+                        <div className="flex-1 px-6 py-6 sm:px-10 sm:py-8">
+                            {hasErrors && (
+                                <div
+                                    role="alert"
+                                    className="mb-6 rounded-sm border-l-4 border-orange-400 bg-orange-50 px-4 py-3 text-sm text-navy-900 dark:border-orange-500 dark:bg-orange-950/30 dark:text-orange-100"
+                                >
+                                    Please fix the highlighted fields to continue.
+                                </div>
+                            )}
+
+                            {currentStep.key === "account" && (
+                                <AccountStep
+                                    form={form}
+                                    errors={errors}
+                                    update={update}
+                                    emailStatus={emailStatus}
+                                    onCheckEmail={() =>
+                                        checkEmailAvailability(form.userEmail.trim())
+                                    }
+                                />
+                            )}
+
+                            {currentStep.key === "personal" && (
+                                <PersonalStep form={form} errors={errors} update={update} />
+                            )}
+
+                            {currentStep.key === "contact" && (
+                                <ContactStep
+                                    form={form}
+                                    errors={errors}
+                                    update={update}
+                                    updateAddress={updateAddress}
+                                />
+                            )}
+
+                            {currentStep.key === "identification" && (
+                                <IdentificationStep
+                                    form={form}
+                                    errors={errors}
+                                    update={update}
+                                />
+                            )}
+
+                            {currentStep.key === "courses" && (
+                                <CoursesStep
+                                    form={form}
+                                    errors={errors}
+                                    courses={courses}
+                                    coursesLoading={coursesLoading}
+                                    coursesError={coursesError}
+                                    updateCourse={updateCourse}
+                                    addCourse={addCourse}
+                                    removeCourse={removeCourse}
+                                />
+                            )}
+
+                            {currentStep.key === "review" && (
+                                <ReviewStep
+                                    form={form}
+                                    courseLookup={courseLookup}
+                                    goToStep={goToStep}
+                                />
+                            )}
+                        </div>
+
+                        {/* Status + errors */}
+                        {(submitError || submitting) && (
+                            <div className="space-y-3 px-6 pb-4 sm:px-10">
+                                {submitError && (
+                                    <div
+                                        role="alert"
+                                        className="rounded-sm border-l-4 border-red-500 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-600 dark:bg-red-950/30 dark:text-red-300"
+                                    >
+                                        {submitError}
+                                    </div>
+                                )}
+                                {submitting && (
+                                    <div className="flex items-center gap-3 rounded-sm bg-zinc-50 px-4 py-3 text-sm text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">
+                                        <Spinner />
+                                        <span>
+                                            {submitStage === "creating-user" &&
+                                                "Creating user account…"}
+                                            {submitStage === "creating-student" &&
+                                                "Creating student record…"}
+                                            {submitStage === "done" && "Redirecting…"}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
                         )}
 
-                        {currentStep.key === "account" && (
-                            <AccountStep
-                                form={form}
-                                errors={errors}
-                                update={update}
-                                emailStatus={emailStatus}
-                                onCheckEmail={() =>
-                                    checkEmailAvailability(form.userEmail.trim())
-                                }
-                            />
-                        )}
+                        {/* Footer actions */}
+                        <div className="flex items-center justify-between gap-3 border-t border-zinc-200 bg-zinc-50/50 px-6 py-4 dark:border-zinc-800 dark:bg-zinc-800/50 sm:px-10">
+                            <button
+                                type="button"
+                                className={btnSecondary}
+                                onClick={handleBack}
+                                disabled={stepIndex === 0 || submitting}
+                            >
+                                ← Previous
+                            </button>
 
-                        {currentStep.key === "personal" && (
-                            <PersonalStep form={form} errors={errors} update={update} />
-                        )}
-
-                        {currentStep.key === "contact" && (
-                            <ContactStep
-                                form={form}
-                                errors={errors}
-                                update={update}
-                                updateAddress={updateAddress}
-                            />
-                        )}
-
-                        {currentStep.key === "identification" && (
-                            <IdentificationStep
-                                form={form}
-                                errors={errors}
-                                update={update}
-                            />
-                        )}
-
-                        {currentStep.key === "courses" && (
-                            <CoursesStep
-                                form={form}
-                                errors={errors}
-                                courses={courses}
-                                coursesLoading={coursesLoading}
-                                coursesError={coursesError}
-                                updateCourse={updateCourse}
-                                addCourse={addCourse}
-                                removeCourse={removeCourse}
-                            />
-                        )}
-
-                        {currentStep.key === "review" && (
-                            <ReviewStep
-                                form={form}
-                                courseLookup={courseLookup}
-                                goToStep={goToStep}
-                            />
-                        )}
-                    </div>
-
-                    {/* Status + errors */}
-                    {(submitError || submitting) && (
-                        <div className="space-y-3 px-6 pb-4 sm:px-10">
-                            {submitError && (
-                                <div
-                                    role="alert"
-                                    className="rounded-sm border-l-4 border-red-500 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-600 dark:bg-red-950/30 dark:text-red-300"
+                            {currentStep.key !== "review" ? (
+                                <button
+                                    type="button"
+                                    className={btnPrimary}
+                                    onClick={handleNext}
+                                    disabled={submitting || emailStatus === "checking"}
                                 >
-                                    {submitError}
-                                </div>
-                            )}
-                            {submitting && (
-                                <div className="flex items-center gap-3 rounded-sm bg-zinc-50 px-4 py-3 text-sm text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">
-                                    <Spinner />
-                                    <span>
-                                        {submitStage === "creating-user" &&
-                                            "Creating user account…"}
-                                        {submitStage === "creating-student" &&
-                                            "Creating student record…"}
-                                        {submitStage === "done" && "Redirecting…"}
-                                    </span>
-                                </div>
+                                    {emailStatus === "checking" ? "Checking…" : "Continue →"}
+                                </button>
+                            ) : (
+                                <button
+                                    type="button"
+                                    className={btnPrimary}
+                                    onClick={handleSubmit}
+                                    disabled={submitting}
+                                >
+                                    {submitting ? "Submitting…" : "Create User & Student"}
+                                </button>
                             )}
                         </div>
-                    )}
-
-                    {/* Footer actions */}
-                    <div className="flex items-center justify-between gap-3 border-t border-zinc-200 bg-zinc-50/50 px-6 py-4 dark:border-zinc-800 dark:bg-zinc-800/50 sm:px-10">
-                        <button
-                            type="button"
-                            className={btnSecondary}
-                            onClick={handleBack}
-                            disabled={stepIndex === 0 || submitting}
-                        >
-                            ← Previous
-                        </button>
-
-                        {currentStep.key !== "review" ? (
-                            <button
-                                type="button"
-                                className={btnPrimary}
-                                onClick={handleNext}
-                                disabled={submitting || emailStatus === "checking"}
-                            >
-                                {emailStatus === "checking" ? "Checking…" : "Continue →"}
-                            </button>
-                        ) : (
-                            <button
-                                type="button"
-                                className={btnPrimary}
-                                onClick={handleSubmit}
-                                disabled={submitting}
-                            >
-                                {submitting ? "Submitting…" : "Create User & Student"}
-                            </button>
-                        )}
-                    </div>
-                </section>
+                    </section>
+                </RequireRole>
             </div>
         </div>
     );

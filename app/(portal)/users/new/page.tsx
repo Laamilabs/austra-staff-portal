@@ -8,6 +8,7 @@ import { userApi } from "@/app/types/users";
 import { studentApi } from "@/app/types/students";
 import { UserRole } from "@/app/lib/types";
 import { CloudinaryUpload } from "@/app/components/ui/cloudinary";
+import RequireRole from "@/app/components/navigation/RequireRole";
 
 const DEFAULT_STUDENT_PASSWORD = "austra student";
 
@@ -349,14 +350,16 @@ function NewUserForm() {
 
 export default function NewUserPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex justify-center items-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-zinc-500" />
-        </div>
-      }
-    >
-      <NewUserForm />
-    </Suspense>
+    <RequireRole roles={["admin"]}>
+      <Suspense
+        fallback={
+          <div className="flex justify-center items-center py-12">
+            <Loader2 className="w-6 h-6 animate-spin text-zinc-500" />
+          </div>
+        }
+      >
+        <NewUserForm />
+      </Suspense>
+    </RequireRole>
   );
 }

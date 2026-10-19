@@ -34,6 +34,7 @@ import {
     type LucideIcon,
 } from "lucide-react";
 import { ApplicationStatus, Application, applicationApi } from "@/app/types/application";
+import RequireRole from "@/app/components/navigation/RequireRole";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -504,8 +505,8 @@ export default function ApplicationDetailPage() {
                                             disabled={updatingStatus}
                                             onClick={() => requestStatus(s)}
                                             className={`relative flex w-full items-center gap-3 rounded-sm px-2.5 py-2 text-left transition disabled:cursor-not-allowed disabled:opacity-60 ${FOCUS} ${active
-                                                    ? "bg-[#0B1E3D]/5 dark:bg-white/10"
-                                                    : "hover:bg-zinc-100 dark:hover:bg-white/5"
+                                                ? "bg-[#0B1E3D]/5 dark:bg-white/10"
+                                                : "hover:bg-zinc-100 dark:hover:bg-white/5"
                                                 }`}
                                         >
                                             {active && (
@@ -577,88 +578,90 @@ export default function ApplicationDetailPage() {
                     </aside>
 
                     {/* Main column */}
-                    <div className="space-y-6 lg:order-1 lg:col-span-2">
-                        <Card title="Applicant" icon={User} tone="bg-sky-500/15 text-sky-600 dark:text-sky-400">
-                            <dl className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-                                <Detail label="Full name" value={name} />
-                                <Detail
-                                    label="Gender"
-                                    value={
-                                        application.applicant?.gender
-                                            ? GENDER_LABELS[application.applicant.gender] ?? application.applicant.gender
-                                            : null
-                                    }
-                                />
-                                <Detail icon={Mail} label="Email" value={application.applicant?.email} href={`mailto:${application.applicant?.email}`} copy />
-                                <Detail icon={Phone} label="Phone" value={application.applicant?.phone} href={`tel:${application.applicant?.phone}`} copy />
-                                <Detail icon={Calendar} label="Date of birth" value={formatDate(application.applicant?.dateOfBirth)} />
-                                <Detail label="Nationality" value={application.applicant?.nationality} />
-                                <Detail icon={MapPin} label="Locality" value={application.applicant?.locality} />
-                                <Detail icon={MapPin} label="County" value={application.applicant?.county} />
-                            </dl>
-                        </Card>
+                    <RequireRole roles={["admin", "registrar"]}>
+                        <div className="space-y-6 lg:order-1 lg:col-span-2">
+                            <Card title="Applicant" icon={User} tone="bg-sky-500/15 text-sky-600 dark:text-sky-400">
+                                <dl className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+                                    <Detail label="Full name" value={name} />
+                                    <Detail
+                                        label="Gender"
+                                        value={
+                                            application.applicant?.gender
+                                                ? GENDER_LABELS[application.applicant.gender] ?? application.applicant.gender
+                                                : null
+                                        }
+                                    />
+                                    <Detail icon={Mail} label="Email" value={application.applicant?.email} href={`mailto:${application.applicant?.email}`} copy />
+                                    <Detail icon={Phone} label="Phone" value={application.applicant?.phone} href={`tel:${application.applicant?.phone}`} copy />
+                                    <Detail icon={Calendar} label="Date of birth" value={formatDate(application.applicant?.dateOfBirth)} />
+                                    <Detail label="Nationality" value={application.applicant?.nationality} />
+                                    <Detail icon={MapPin} label="Locality" value={application.applicant?.locality} />
+                                    <Detail icon={MapPin} label="County" value={application.applicant?.county} />
+                                </dl>
+                            </Card>
 
-                        <Card title="Course and study" icon={BookOpen} tone="bg-violet-500/15 text-violet-600 dark:text-violet-400">
-                            <dl className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-                                <Detail label="Course" value={courseName(application.course)} className="sm:col-span-2" />
-                                {code && <Detail label="Course code" value={code} />}
-                                <Detail label="Study mode" value={STUDY_MODE_LABELS[application.studyMode] ?? application.studyMode} />
-                                <Detail icon={Calendar} label="Preferred start" value={formatDate(application.preferredStartDate)} />
-                                {cDetails?.level && <Detail label="Level" value={cDetails.level} />}
-                                {cDetails?.duration && <Detail label="Duration" value={cDetails.duration} />}
-                                {cDetails?.department && <Detail label="Department" value={cDetails.department} />}
-                            </dl>
-                        </Card>
+                            <Card title="Course and study" icon={BookOpen} tone="bg-violet-500/15 text-violet-600 dark:text-violet-400">
+                                <dl className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+                                    <Detail label="Course" value={courseName(application.course)} className="sm:col-span-2" />
+                                    {code && <Detail label="Course code" value={code} />}
+                                    <Detail label="Study mode" value={STUDY_MODE_LABELS[application.studyMode] ?? application.studyMode} />
+                                    <Detail icon={Calendar} label="Preferred start" value={formatDate(application.preferredStartDate)} />
+                                    {cDetails?.level && <Detail label="Level" value={cDetails.level} />}
+                                    {cDetails?.duration && <Detail label="Duration" value={cDetails.duration} />}
+                                    {cDetails?.department && <Detail label="Department" value={cDetails.department} />}
+                                </dl>
+                            </Card>
 
-                        <Card title="Education" icon={GraduationCap} tone="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
-                            <dl className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-                                <Detail label="Highest qualification" value={application.education?.highestQualification} className="sm:col-span-2" />
-                                <Detail icon={Building2} label="Institution" value={application.education?.institution} />
-                                <Detail
-                                    label="Year completed"
-                                    value={application.education?.yearCompleted != null ? String(application.education.yearCompleted) : null}
-                                />
-                                {application.education?.gradeOrGpa && (
-                                    <Detail label="Grade / GPA" value={application.education.gradeOrGpa} />
-                                )}
-                            </dl>
-                        </Card>
-
-                        {(application.personalStatement || application.previousExperience || application.referralSource) && (
-                            <Card title="Additional information" icon={FileText} tone="bg-orange-400/20 text-orange-600 dark:text-orange-400">
-                                <dl className="space-y-4">
-                                    {application.personalStatement && (
-                                        <Prose label="Personal statement">{application.personalStatement}</Prose>
-                                    )}
-                                    {application.previousExperience && (
-                                        <Prose label="Previous experience">{application.previousExperience}</Prose>
-                                    )}
-                                    {application.referralSource && (
-                                        <Detail label="How they heard about us" value={application.referralSource} />
+                            <Card title="Education" icon={GraduationCap} tone="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                                <dl className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+                                    <Detail label="Highest qualification" value={application.education?.highestQualification} className="sm:col-span-2" />
+                                    <Detail icon={Building2} label="Institution" value={application.education?.institution} />
+                                    <Detail
+                                        label="Year completed"
+                                        value={application.education?.yearCompleted != null ? String(application.education.yearCompleted) : null}
+                                    />
+                                    {application.education?.gradeOrGpa && (
+                                        <Detail label="Grade / GPA" value={application.education.gradeOrGpa} />
                                     )}
                                 </dl>
                             </Card>
-                        )}
 
-                        <Card title="Emergency contact" icon={Users} tone="bg-rose-500/15 text-rose-600 dark:text-rose-400">
-                            <dl className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-                                <Detail label="Name" value={application.emergencyContact?.name} />
-                                <Detail label="Relationship" value={application.emergencyContact?.relationship} />
-                                <Detail icon={Phone} label="Phone" value={application.emergencyContact?.phone} href={`tel:${application.emergencyContact?.phone}`} copy />
-                                {application.emergencyContact?.email && (
-                                    <Detail icon={Mail} label="Email" value={application.emergencyContact.email} href={`mailto:${application.emergencyContact.email}`} copy />
-                                )}
-                            </dl>
-                        </Card>
+                            {(application.personalStatement || application.previousExperience || application.referralSource) && (
+                                <Card title="Additional information" icon={FileText} tone="bg-orange-400/20 text-orange-600 dark:text-orange-400">
+                                    <dl className="space-y-4">
+                                        {application.personalStatement && (
+                                            <Prose label="Personal statement">{application.personalStatement}</Prose>
+                                        )}
+                                        {application.previousExperience && (
+                                            <Prose label="Previous experience">{application.previousExperience}</Prose>
+                                        )}
+                                        {application.referralSource && (
+                                            <Detail label="How they heard about us" value={application.referralSource} />
+                                        )}
+                                    </dl>
+                                </Card>
+                            )}
 
-                        <p className="px-1 text-xs text-zinc-500 dark:text-zinc-400">
-                            Submitted {formatDateTime(application.createdAt) ?? "—"} · Last updated{" "}
-                            {formatDateTime(application.updatedAt) ?? "—"}
-                            {application.declarationAccepted
-                                ? ` · Declaration accepted ${formatDateTime(application.declarationAcceptedAt ?? application.createdAt) ?? ""}`
-                                : ""}
-                        </p>
-                    </div>
+                            <Card title="Emergency contact" icon={Users} tone="bg-rose-500/15 text-rose-600 dark:text-rose-400">
+                                <dl className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+                                    <Detail label="Name" value={application.emergencyContact?.name} />
+                                    <Detail label="Relationship" value={application.emergencyContact?.relationship} />
+                                    <Detail icon={Phone} label="Phone" value={application.emergencyContact?.phone} href={`tel:${application.emergencyContact?.phone}`} copy />
+                                    {application.emergencyContact?.email && (
+                                        <Detail icon={Mail} label="Email" value={application.emergencyContact.email} href={`mailto:${application.emergencyContact.email}`} copy />
+                                    )}
+                                </dl>
+                            </Card>
+
+                            <p className="px-1 text-xs text-zinc-500 dark:text-zinc-400">
+                                Submitted {formatDateTime(application.createdAt) ?? "—"} · Last updated{" "}
+                                {formatDateTime(application.updatedAt) ?? "—"}
+                                {application.declarationAccepted
+                                    ? ` · Declaration accepted ${formatDateTime(application.declarationAcceptedAt ?? application.createdAt) ?? ""}`
+                                    : ""}
+                            </p>
+                        </div>
+                    </RequireRole>
                 </div>
             </div>
 

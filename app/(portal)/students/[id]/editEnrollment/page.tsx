@@ -27,6 +27,7 @@ import {
 
 import { resolveCourseByAdmissionNumber } from "../../components/resolve-course";
 import { DatePicker } from "@/app/(portal)/students/new/components/DatePicker";
+import RequireRole from "@/app/components/navigation/RequireRole";
 
 type EditMode = "admission" | "dates";
 
@@ -259,20 +260,22 @@ export default function EditEnrollmentPage() {
 
     if (loading) {
         return (
-            <main className="min-h-[calc(100vh-80px)] bg-zinc-50 px-4 py-8 dark:bg-zinc-950">
-                <div className="mx-auto flex max-w-full items-center justify-center py-24">
-                    <div className="flex flex-col items-center gap-3 text-zinc-500 dark:text-zinc-400">
-                        <Loader2
-                            size={28}
-                            className="animate-spin text-orange-500"
-                        />
+            <RequireRole roles={["admin", "registrar"]}>
+                <main className="min-h-[calc(100vh-80px)] bg-zinc-50 px-4 py-8 dark:bg-zinc-950">
+                    <div className="mx-auto flex max-w-full items-center justify-center py-24">
+                        <div className="flex flex-col items-center gap-3 text-zinc-500 dark:text-zinc-400">
+                            <Loader2
+                                size={28}
+                                className="animate-spin text-orange-500"
+                            />
 
-                        <p className="text-sm">
-                            Loading enrollment...
-                        </p>
+                            <p className="text-sm">
+                                Loading enrollment...
+                            </p>
+                        </div>
                     </div>
-                </div>
-            </main>
+                </main>
+            </RequireRole>
         );
     }
 

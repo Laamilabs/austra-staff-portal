@@ -42,6 +42,7 @@ import {
   type ApplicationStatus,
   type ApplicationSummaryStats,
 } from "@/app/types/application";
+import RequireRoleInline from "@/app/components/navigation/RequiredRoleInline";
 
 // ---------------------------------------------------------------------------
 // Tokens
@@ -926,10 +927,12 @@ export default function DashboardPage() {
                   </StoryStat>
                 )}
                 {financeSummary && (
-                  <StoryStat>
-                    <Num>{collectionRatePct}%</Num>
-                    of billed fees collected
-                  </StoryStat>
+                  <RequireRoleInline roles={["admin", "registrar"]}>
+                    <StoryStat>
+                      <Num>{collectionRatePct}%</Num>
+                      of billed fees collected
+                    </StoryStat>
+                  </RequireRoleInline>
                 )}
                 {appStats && appsAwaiting > 0 && (
                   <StoryStat>
@@ -1327,156 +1330,158 @@ export default function DashboardPage() {
             </section>
 
             {/* ---------------- 04 Finance ---------------- */}
-            <section>
-              <Chapter
-                n="04"
-                title="Fee collection"
-                subtitle="From what was billed to what has been collected"
-                action={
-                  <Link
-                    href="/finance"
-                    className={`inline-flex items-center gap-1 rounded-sm text-xs font-semibold text-[#082B66] hover:underline dark:text-orange-400 ${FOCUS_RING}`}
-                  >
-                    View finances
-                    <ChevronRight size={14} />
-                  </Link>
-                }
-              />
+            <RequireRoleInline roles={["admin", "registrar"]}>
+              <section>
+                <Chapter
+                  n="04"
+                  title="Fee collection"
+                  subtitle="From what was billed to what has been collected"
+                  action={
+                    <Link
+                      href="/finance"
+                      className={`inline-flex items-center gap-1 rounded-sm text-xs font-semibold text-[#082B66] hover:underline dark:text-orange-400 ${FOCUS_RING}`}
+                    >
+                      View finances
+                      <ChevronRight size={14} />
+                    </Link>
+                  }
+                />
 
-              <div className={`${CARD} p-5 sm:p-6`}>
-                {loading && !financeSummary ? (
-                  <Skeleton className="h-56" />
-                ) : financeSummary ? (
-                  <>
-                    <div className="grid gap-6 md:grid-cols-[auto_1fr] md:items-center md:gap-10">
-                      {/* Gauge */}
-                      <div className="flex justify-center md:justify-start">
-                        <div
-                          role="img"
-                          aria-label={`Collection rate ${collectionRatePct} percent`}
-                          className="relative h-36 w-36"
-                        >
-                          <svg viewBox="0 0 132 132" className="h-full w-full -rotate-90">
-                            <circle
-                              cx="66"
-                              cy="66"
-                              r="54"
-                              fill="none"
-                              strokeWidth="12"
-                              className="stroke-[#082B66]/15 dark:stroke-white/10"
-                            />
-                            <circle
-                              cx="66"
-                              cy="66"
-                              r="54"
-                              fill="none"
-                              strokeWidth="12"
-                              strokeLinecap="butt"
-                              strokeDasharray={2 * Math.PI * 54}
-                              strokeDashoffset={
-                                2 * Math.PI * 54 * (1 - collectionRatePct / 100)
-                              }
-                              className="stroke-orange-400 transition-all duration-700 ease-out"
-                            />
-                          </svg>
-                          <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className="text-3xl font-semibold text-zinc-900 dark:text-white">
-                              {collectionRatePct}%
-                            </span>
-                            <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
-                              collected
-                            </span>
+                <div className={`${CARD} p-5 sm:p-6`}>
+                  {loading && !financeSummary ? (
+                    <Skeleton className="h-56" />
+                  ) : financeSummary ? (
+                    <>
+                      <div className="grid gap-6 md:grid-cols-[auto_1fr] md:items-center md:gap-10">
+                        {/* Gauge */}
+                        <div className="flex justify-center md:justify-start">
+                          <div
+                            role="img"
+                            aria-label={`Collection rate ${collectionRatePct} percent`}
+                            className="relative h-36 w-36"
+                          >
+                            <svg viewBox="0 0 132 132" className="h-full w-full -rotate-90">
+                              <circle
+                                cx="66"
+                                cy="66"
+                                r="54"
+                                fill="none"
+                                strokeWidth="12"
+                                className="stroke-[#082B66]/15 dark:stroke-white/10"
+                              />
+                              <circle
+                                cx="66"
+                                cy="66"
+                                r="54"
+                                fill="none"
+                                strokeWidth="12"
+                                strokeLinecap="butt"
+                                strokeDasharray={2 * Math.PI * 54}
+                                strokeDashoffset={
+                                  2 * Math.PI * 54 * (1 - collectionRatePct / 100)
+                                }
+                                className="stroke-orange-400 transition-all duration-700 ease-out"
+                              />
+                            </svg>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                              <span className="text-3xl font-semibold text-zinc-900 dark:text-white">
+                                {collectionRatePct}%
+                              </span>
+                              <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
+                                collected
+                              </span>
+                            </div>
                           </div>
+                        </div>
+
+                        {/* Billed → Paid → Outstanding */}
+                        <div className="space-y-4">
+                          <FlowRow
+                            label="Billed"
+                            amount={financeSummary.assessments.totalBilled}
+                            billed={financeSummary.assessments.totalBilled}
+                            fill={NAVY_FILL}
+                          />
+                          <FlowRow
+                            label="Paid"
+                            amount={financeSummary.assessments.totalPaid}
+                            billed={financeSummary.assessments.totalBilled}
+                            fill="bg-orange-400"
+                          />
+                          <FlowRow
+                            label="Outstanding"
+                            amount={financeSummary.assessments.outstanding}
+                            billed={financeSummary.assessments.totalBilled}
+                            fill="bg-orange-200 dark:bg-orange-300/70"
+                          />
                         </div>
                       </div>
 
-                      {/* Billed → Paid → Outstanding */}
-                      <div className="space-y-4">
-                        <FlowRow
-                          label="Billed"
-                          amount={financeSummary.assessments.totalBilled}
-                          billed={financeSummary.assessments.totalBilled}
-                          fill={NAVY_FILL}
-                        />
-                        <FlowRow
-                          label="Paid"
-                          amount={financeSummary.assessments.totalPaid}
-                          billed={financeSummary.assessments.totalBilled}
-                          fill="bg-orange-400"
-                        />
-                        <FlowRow
-                          label="Outstanding"
-                          amount={financeSummary.assessments.outstanding}
-                          billed={financeSummary.assessments.totalBilled}
-                          fill="bg-orange-200 dark:bg-orange-300/70"
-                        />
+                      <div className="mt-6">
+                        <Insight>
+                          <B>
+                            {formatCompact(financeSummary.assessments.outstanding)}
+                          </B>{" "}
+                          is still outstanding —{" "}
+                          <B>{collectionRatePct}%</B> of billed fees have been
+                          collected.
+                        </Insight>
                       </div>
-                    </div>
 
-                    <div className="mt-6">
-                      <Insight>
-                        <B>
-                          {formatCompact(financeSummary.assessments.outstanding)}
-                        </B>{" "}
-                        is still outstanding —{" "}
-                        <B>{collectionRatePct}%</B> of billed fees have been
-                        collected.
-                      </Insight>
-                    </div>
-
-                    <div className="mt-5 grid grid-cols-2 gap-3 border-t border-zinc-200 pt-5 dark:border-zinc-800 lg:grid-cols-4">
-                      {/* This month */}
-                      <div className="col-span-2 rounded-sm border border-zinc-200 bg-zinc-50 p-3.5 dark:border-zinc-800 dark:bg-zinc-950 lg:col-span-1">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
-                          This month
-                        </p>
-                        <p
-                          className="mt-1 text-xl font-semibold text-orange-500 dark:text-orange-400"
-                          title={formatCurrency(financeSummary.thisMonth)}
-                        >
-                          {formatCompact(financeSummary.thisMonth)}
-                        </p>
-                        {monthDelta !== null && (
-                          <span
-                            className={`mt-1.5 inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-xs font-semibold ${monthDelta >= 0
-                              ? "bg-orange-400/15 text-orange-700 dark:text-orange-300"
-                              : "bg-rose-500/10 text-rose-700 dark:text-rose-300"
-                              }`}
+                      <div className="mt-5 grid grid-cols-2 gap-3 border-t border-zinc-200 pt-5 dark:border-zinc-800 lg:grid-cols-4">
+                        {/* This month */}
+                        <div className="col-span-2 rounded-sm border border-zinc-200 bg-zinc-50 p-3.5 dark:border-zinc-800 dark:bg-zinc-950 lg:col-span-1">
+                          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
+                            This month
+                          </p>
+                          <p
+                            className="mt-1 text-xl font-semibold text-orange-500 dark:text-orange-400"
+                            title={formatCurrency(financeSummary.thisMonth)}
                           >
-                            {monthDelta >= 0 ? (
-                              <TrendingUp size={12} />
-                            ) : (
-                              <TrendingDown size={12} />
-                            )}
-                            {Math.abs(monthDelta).toFixed(1)}% vs last month
-                          </span>
-                        )}
-                      </div>
+                            {formatCompact(financeSummary.thisMonth)}
+                          </p>
+                          {monthDelta !== null && (
+                            <span
+                              className={`mt-1.5 inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-xs font-semibold ${monthDelta >= 0
+                                ? "bg-orange-400/15 text-orange-700 dark:text-orange-300"
+                                : "bg-rose-500/10 text-rose-700 dark:text-rose-300"
+                                }`}
+                            >
+                              {monthDelta >= 0 ? (
+                                <TrendingUp size={12} />
+                              ) : (
+                                <TrendingDown size={12} />
+                              )}
+                              {Math.abs(monthDelta).toFixed(1)}% vs last month
+                            </span>
+                          )}
+                        </div>
 
-                      <StatusTile
-                        label="Confirmed"
-                        count={financeSummary.transactions.confirmedCount}
-                        dot="bg-orange-400"
-                      />
-                      <StatusTile
-                        label="Pending"
-                        count={financeSummary.transactions.pendingCount}
-                        dot={NAVY_FILL}
-                      />
-                      <StatusTile
-                        label="Reversed"
-                        count={financeSummary.transactions.reversedCount}
-                        dot="bg-zinc-400 dark:bg-zinc-500"
-                      />
-                    </div>
-                  </>
-                ) : (
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                    No finance data available.
-                  </p>
-                )}
-              </div>
-            </section>
+                        <StatusTile
+                          label="Confirmed"
+                          count={financeSummary.transactions.confirmedCount}
+                          dot="bg-orange-400"
+                        />
+                        <StatusTile
+                          label="Pending"
+                          count={financeSummary.transactions.pendingCount}
+                          dot={NAVY_FILL}
+                        />
+                        <StatusTile
+                          label="Reversed"
+                          count={financeSummary.transactions.reversedCount}
+                          dot="bg-zinc-400 dark:bg-zinc-500"
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                      No finance data available.
+                    </p>
+                  )}
+                </div>
+              </section>
+            </RequireRoleInline>
           </div>
         </div>
       </div>

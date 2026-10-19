@@ -10,6 +10,7 @@ import {
 } from "@/app/types/fee-structure";
 import SelectCourse from "@/app/(portal)/courses/selectCourse";
 import type { Course } from "@/app/types/courses";
+import RequireRole from "@/app/components/navigation/RequireRole";
 
 // ---------------------------------------------------------------------------
 // Palette
@@ -107,7 +108,7 @@ function splitByWeight(
 // Page
 // ---------------------------------------------------------------------------
 
-export default function NewFeeStructurePage() {
+function NewFeeStructureContent() {
     const router = useRouter();
 
     const [courseId, setCourseId] = useState("");
@@ -1048,6 +1049,14 @@ export default function NewFeeStructurePage() {
                 </div>
             </form>
         </div>
+    );
+}
+
+export default function NewFeeStructurePage() {
+    return (
+        <RequireRole roles={["admin", "registrar"]}>
+            <NewFeeStructureContent />
+        </RequireRole>
     );
 }
 

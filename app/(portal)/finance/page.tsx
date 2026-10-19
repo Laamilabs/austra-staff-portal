@@ -35,6 +35,7 @@ import {
     type TransactionStatus,
     type StudentBalance,
 } from "@/app/types/finance";
+import RequireRole from "@/app/components/navigation/RequireRole";
 
 // ---------------------------------------------------------------------------
 // Tokens
@@ -160,7 +161,7 @@ function formatDate(iso: string | null | undefined): string {
 // Page
 // ---------------------------------------------------------------------------
 
-export default function FinanceDashboardPage() {
+function FinanceDashboardContent() {
     const [summary, setSummary] = useState<FinanceSummary | null>(null);
     // Recent activity is the one panel that still wants raw documents:
     // the summary gives us totals, not the individual rows for the timeline.
@@ -864,6 +865,13 @@ export default function FinanceDashboardPage() {
     );
 }
 
+export default function FinanceDashboardPage() {
+    return (
+        <RequireRole roles={["admin", "registrar"]}>
+            <FinanceDashboardContent />
+        </RequireRole>
+    );
+}
 // ---------------------------------------------------------------------------
 // Presentational bits
 // ---------------------------------------------------------------------------
