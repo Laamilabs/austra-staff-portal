@@ -1,5 +1,5 @@
 
- // lib/types.ts
+// lib/types.ts
 
 export type UserRole =
   | "admin"

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Loader2, Key, Check, AlertCircle } from "lucide-react";
 
 import api from "@/app/lib/api";
+import { userApi } from "@/app/types/users";
 
 interface ChangePasswordCardProps {
     userId: string;
@@ -19,6 +20,7 @@ export default function ChangePasswordCard({ userId }: ChangePasswordCardProps) 
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
 
+    // adjust path
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
@@ -31,8 +33,8 @@ export default function ChangePasswordCard({ userId }: ChangePasswordCardProps) 
 
         try {
             setSaving(true);
-            await api.post(`/users/${userId}/change-password`, {
-                currentPassword: form.currentPassword,
+            await userApi.changePassword(userId, {
+                oldPassword: form.currentPassword,   // ✅ DTO field name
                 newPassword: form.newPassword,
             });
             setSuccess("Password changed successfully.");
