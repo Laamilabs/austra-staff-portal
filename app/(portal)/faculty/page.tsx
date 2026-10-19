@@ -66,86 +66,70 @@ export default function FacultyPage() {
   }, []);
 
 
-  const departments = useMemo(() => {
-    const map = new Map<string, string>();
+ const departments = useMemo(() => {
+  const map = new Map<string, string>();
 
-    faculty.forEach((member) => {
-      if (
-        typeof member.department === "object" &&
-        member.department?._id
-      ) {
-        map.set(member.department._id, member.department.name);
-      }
-    });
-
-    return Array.from(map.entries()).map(([id, name]) => ({
-      id,
-      name,
-    }));
-  }, [faculty]);
-
-  const filteredFaculty = useMemo(() => {
-    const query = search.trim().toLowerCase();
-
-    return faculty.filter((member) => {
-      const departmentId =
-        typeof member.department === "object"
-          ? member.department._id
-          : member.department;
-
-      const matchesDepartment =
-        departmentFilter === "all" ||
-        departmentId === departmentFilter;
-
-      if (!matchesDepartment) {
-        return false;
-      }
-
-      if (!query) {
-        return true;
-      }
-
-      const departmentName =
-        typeof member.department === "object"
-          ? member.department.name
-          : "";
-
-      const userName =
-        typeof member.user === "object" ? member.user.name : "";
-      const userEmail =
-        typeof member.user === "object" ? member.user.email : "";
-
-      return [
-        member.name,
-        member.staffNo,
-        member.qualification,
-        member.expertise,
-        member.description,
-        departmentName,
-        userName,
-        userEmail,
-      ]
-        .filter(Boolean)
-        .some((value) =>
-          value.toLowerCase().includes(query),
-        );
-    });
-  }, [faculty, search, departmentFilter]);
-
-  const getDepartmentName = (member: Faculty) => {
-    if (typeof member.department === "object") {
-      return member.department.name;
+  faculty.forEach((member) => {
+    if (
+      member.department &&
+      typeof member.department === "object" &&
+      member.department._id
+    ) {
+      map.set(member.department._id, member.department.name);
     }
+  });
 
-    return "No department";
-  };
+  return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+}, [faculty]);
 
-  const getUserAccount = (member: Faculty): User | null => {
-    if (typeof member.user === "object" && member.user !== null) {
-      return member.user;
-    }
-    return null;
-  };
+const filteredFaculty = useMemo(() => {
+  const query = search.trim().toLowerCase();
+
+  return faculty.filter((member) => {
+    const matchesDepartment =
+      departmentFilter === "all" ||
+      getDepartmentId(member) === departmentFilter;
+
+    if (!matchesDepartment) return false;
+    if (!query) return true;
+
+    const userAccount = getUserAccount(member);
+
+    return [
+      member.name,
+      member.staffNo,
+      member.qualification,
+      member.expertise,
+      member.description,
+      getDepartmentName(member),
+      userAccount?.name ?? "",
+      userAccount?.email ?? "",
+    ]
+      .filter(Boolean)
+      .some((value) => value.toLowerCase().includes(query));
+  });
+}, [faculty, search, departmentFilter]);
+
+const getDepartmentId = (member: Faculty): string | null => {
+  if (!member.department) return null;
+  return typeof member.department === "object"
+    ? member.department._id
+    : member.department;
+};
+
+const getDepartmentName = (member: Faculty) => {
+  if (member.department && typeof member.department === "object") {
+    return member.department.name;
+  }
+  return "No department";
+};
+
+const getUserAccount = (member: Faculty): User | null => {
+  if (member.user && typeof member.user === "object") {
+    return member.user;
+  }
+  return null;
+};
 
   return (
     <main className="min-h-full bg-zinc-50 dark:bg-zinc-950">

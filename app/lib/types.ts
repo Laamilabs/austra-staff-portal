@@ -1,18 +1,22 @@
-// lib/types.ts
 
-export type UserRole = "admin" | "staff" | "student";
+ // lib/types.ts
+
+export type UserRole =
+  | "admin"
+  | "staff"
+  | "registrar"
+  | "student";
 
 export interface User {
   /**
-   * Mongo's canonical identifier.
-   * Always present on responses from the backend.
+   * MongoDB's canonical identifier.
+   * Always present on backend responses.
    */
   _id: string;
 
   /**
-   * Optional virtual mirror of `_id`. Present when the backend serializes
-   * with `toJSON({ virtuals: true })` or when a service explicitly adds it.
-   * New code should prefer `_id`.
+   * Optional virtual mirror of `_id`.
+   * Prefer `_id` in new code.
    */
   id?: string;
 

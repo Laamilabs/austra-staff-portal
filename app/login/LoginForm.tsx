@@ -4,14 +4,37 @@ import { FormEvent, KeyboardEvent, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AlertCircle, ArrowUpFromLine, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowUpFromLine,
+  Eye,
+  EyeOff,
+  Loader2,
+  Lock,
+  Mail,
+} from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { DATABASE_BACKUP_PROMPT_KEY } from "../types/db-backup";
 
 const FIELD =
-  "h-11 min-w-0 w-full rounded-sm border border-[#0B1E3D]/15 bg-[#F8FAFD] pl-10 pr-3 text-sm text-[#0B1E3D] " +
-  "placeholder:text-zinc-400 transition focus:border-orange-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-400/20 " +
-  "dark:border-white/15 dark:bg-white/5 dark:text-white dark:placeholder:text-zinc-500 dark:focus:border-orange-400";
+  // shape + layout
+  "peer h-11 min-w-0 w-full rounded-sm border border-[#0B1E3D]/15 bg-[#F8FAFD] pl-10 pr-3 text-sm " +
+  // text + caret — always visible against the field background
+  "text-[#0B1E3D] caret-[#0B1E3D] placeholder:text-zinc-400 " +
+  // interaction + focus (light)
+  "transition hover:border-[#0B1E3D]/25 " +
+  "focus:border-orange-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-400/30 " +
+  // dark mode — keep the field dark on focus so white text stays readable
+  "dark:border-white/15 dark:bg-white/5 dark:text-white dark:caret-orange-400 dark:placeholder:text-zinc-500 " +
+  "dark:hover:border-white/25 " +
+  "dark:focus:border-orange-400 dark:focus:bg-[#0B1E3D] dark:focus:ring-orange-400/30 " +
+  // browser autofill — stop Chrome from painting a light box behind white text
+  "[&:-webkit-autofill]:[-webkit-text-fill-color:#0B1E3D] " +
+  "[&:-webkit-autofill]:[-webkit-box-shadow:0_0_0_1000px_#F8FAFD_inset] " +
+  "dark:[&:-webkit-autofill]:[-webkit-text-fill-color:#ffffff] " +
+  "dark:[&:-webkit-autofill]:[-webkit-box-shadow:0_0_0_1000px_#0B1E3D_inset] " +
+  // disabled
+  "disabled:cursor-not-allowed disabled:opacity-60";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -72,6 +95,7 @@ export default function LoginForm() {
       <div aria-live="assertive">
         {error && (
           <div
+            id="login-error"
             role="alert"
             className="mt-6 flex items-start gap-2.5 rounded-sm border border-red-200 border-l-4 border-l-red-500 bg-red-50 px-3 py-2.5 text-sm text-red-700 dark:border-red-900/60 dark:border-l-red-500 dark:bg-red-950/40 dark:text-red-300"
           >
@@ -81,19 +105,29 @@ export default function LoginForm() {
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className="mt-5 space-y-4 min-[360px]:mt-6 min-[360px]:space-y-5" noValidate={false}>
+      <form
+        onSubmit={handleSubmit}
+        className="mt-5 space-y-4 min-[360px]:mt-6 min-[360px]:space-y-5"
+      >
         <div>
-          <label htmlFor="email" className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-300">
+          <label
+            htmlFor="email"
+            className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-300"
+          >
             Email
           </label>
           <div className="relative">
-            <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#0B1E3D]/55" />
+            <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#0B1E3D]/55 dark:text-white/60" />
             <input
               id="email"
               name="email"
               type="email"
               inputMode="email"
               autoComplete="username"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              enterKeyHint="next"
               autoFocus
               required
               value={email}
@@ -103,13 +137,18 @@ export default function LoginForm() {
               }}
               placeholder="you@austra.ac.ke"
               className={FIELD}
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? "login-error" : undefined}
             />
           </div>
         </div>
 
         <div>
           <div className="mb-1.5 flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
-            <label htmlFor="password" className="text-xs font-medium text-zinc-600 dark:text-zinc-300">
+            <label
+              htmlFor="password"
+              className="text-xs font-medium text-zinc-600 dark:text-zinc-300"
+            >
               Password
             </label>
             <Link
@@ -126,6 +165,9 @@ export default function LoginForm() {
               name="password"
               type={showPassword ? "text" : "password"}
               autoComplete="current-password"
+              autoCapitalize="none"
+              spellCheck={false}
+              enterKeyHint="go"
               required
               value={password}
               onChange={(e) => {
@@ -137,19 +179,29 @@ export default function LoginForm() {
               onBlur={() => setCapsOn(false)}
               placeholder="Enter your password"
               className={`${FIELD} pr-11`}
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? "login-error" : undefined}
             />
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
               aria-label={showPassword ? "Hide password" : "Show password"}
               aria-pressed={showPassword}
+              tabIndex={0}
               className="absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-sm text-zinc-500 hover:bg-zinc-900/5 hover:text-[#0B1E3D] focus-visible:outline focus-visible:outline-orange-400 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white"
             >
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
             </button>
           </div>
           {capsOn && (
-            <p className="mt-1.5 flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400" role="status">
+            <p
+              className="mt-1.5 flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400"
+              role="status"
+            >
               <ArrowUpFromLine className="h-3.5 w-3.5" /> Caps Lock is on
             </p>
           )}
@@ -158,6 +210,7 @@ export default function LoginForm() {
         <button
           type="submit"
           disabled={isLoading}
+          aria-busy={isLoading}
           className="flex h-11 w-full items-center justify-center gap-2 rounded-sm bg-[#0B1E3D] text-sm font-semibold text-white shadow-sm transition hover:bg-[#16345F] active:scale-[0.99] focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-orange-400 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-orange-400 dark:text-[#0B1E3D] dark:hover:bg-orange-300 dark:focus-visible:outline-white"
         >
           {isLoading ? (

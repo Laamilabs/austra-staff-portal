@@ -11,15 +11,16 @@ export interface CourseRef {
   [key: string]: unknown;
 }
 
+// app/types/faculty.ts
 export interface Faculty {
   _id: string;
   name: string;
   staffNo: string;
-  user?: User | string;
+  user?: User | string | null;          // <-- populate can yield null
   qualification: string;
   expertise: string;
   description: string;
-  department: DepartmentRef | string;
+  department: DepartmentRef | string | null;  // <-- ditto
   courses: (CourseRef | string)[];
   documents: string[];
   createdAt?: string;

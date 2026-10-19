@@ -358,6 +358,7 @@ export default function UserDetailPage() {
                                         <option value="admin">Admin</option>
                                         <option value="staff">Staff</option>
                                         <option value="student">Student</option>
+                                        <option value="registrar">Registrar</option>
                                     </select>
                                 </div>
 

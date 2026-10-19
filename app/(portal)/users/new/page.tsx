@@ -232,6 +232,7 @@ function NewUserForm() {
               <option value="student">Student</option>
               <option value="staff">Staff</option>
               <option value="admin">Admin</option>
+              <option value="registrar">Registrar</option>
             </select>
           </div>
 

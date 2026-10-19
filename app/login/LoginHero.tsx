@@ -95,7 +95,7 @@ export default function LoginHero() {
           {TILES.map(({ label, icon: Icon, tone, description }, i) => (
             <li
               key={label}
-              className="lh-in group flex min-w-0 items-center gap-2 rounded-sm border border-[#0B1E3D]/[0.04] bg-white/60 p-2 transition-colors hover:border-orange-400/40 hover:bg-orange-400/[0.06] dark:border-white/[0.04] dark:bg-white/[0.03] dark:hover:border-orange-400/30 dark:hover:bg-orange-400/[0.06] min-[480px]:gap-3 min-[480px]:p-3 min-[720px]:flex-col min-[720px]:items-start xl:p-4"
+              className="lh-in group flex min-w-0 items-center gap-2 rounded-sm border border-[#0B1E3D]/4 bg-white/60 p-2 transition-colors hover:border-orange-400/40 hover:bg-orange-400/[0.06] dark:border-white/[0.04] dark:bg-white/[0.03] dark:hover:border-orange-400/30 dark:hover:bg-orange-400/[0.06] min-[480px]:gap-3 min-[480px]:p-3 min-[720px]:flex-col min-[720px]:items-start xl:p-4"
               style={{ animationDelay: `${i * 60}ms` }}
             >
               <span
