@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     AlertCircle,
     ArrowRight,
+    ArrowUpRight,
     Banknote,
     CalendarDays,
     CheckCircle2,
@@ -13,6 +14,7 @@ import {
     Hourglass,
     Landmark,
     Layers,
+    LoaderCircle,
     MoreHorizontal,
     Plus,
     Receipt,
@@ -44,6 +46,12 @@ import RequireRole from "@/app/components/navigation/RequireRole";
 const FOCUS_RING =
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400";
 
+const FOCUS_OFFSET =
+    "focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#0B1E3D]";
+
+const SURFACE =
+    "rounded-sm border border-zinc-200/80 bg-white/80 shadow-sm shadow-blue-950/5 dark:border-white/10 dark:bg-white/4";
+
 const CODE_CHIP =
     "rounded-sm bg-[#0B1E3D]/5 px-1.5 py-0.5 font-mono text-[11px] font-medium text-[#0B1E3D] ring-1 ring-inset ring-[#0B1E3D]/10 dark:bg-orange-400/10 dark:text-orange-300 dark:ring-orange-400/25";
 
@@ -68,29 +76,47 @@ interface FinanceModule {
     description: string;
     tone: Tone;
     icon: LucideIcon;
+    /** Live figure shown on the tile once the summary has loaded. */
+    stat: (s: FinanceSummary) => { value: string; label: string };
 }
 
+// Order follows how money moves: price a course, bill the student, record payments.
 const modules: FinanceModule[] = [
     {
-        href: "/finance/transactions",
-        title: "Transactions",
-        description: "Record payments, reverse entries and audit the ledger.",
-        tone: "emerald",
-        icon: Receipt,
+        href: "/finance/fee-structures",
+        title: "Fee structures",
+        description:
+            "Set what each course costs to take: fee items, totals and academic-year pricing.",
+        tone: "orange",
+        icon: Layers,
+        stat: (s) => ({
+            value: s.assessments.activeStructures.toLocaleString(),
+            label: "active fee structures",
+        }),
     },
     {
         href: "/finance/student-payments",
         title: "Student payments",
-        description: "Balances, payment history and outstanding fees per student.",
+        description:
+            "Each student's total fees, what they have paid and what is still owed.",
         tone: "sky",
         icon: Users,
+        stat: (s) => ({
+            value: formatCurrency(s.assessments.outstanding),
+            label: `outstanding · ${s.assessments.activeCount.toLocaleString()} active`,
+        }),
     },
     {
-        href: "/finance/fee-structures",
-        title: "Fee structures",
-        description: "Course-level fee items, totals and academic-year pricing.",
-        tone: "orange",
-        icon: Layers,
+        href: "/finance/transactions",
+        title: "Transactions",
+        description:
+            "Every payment on record. Confirm, reverse and audit the ledger.",
+        tone: "emerald",
+        icon: Receipt,
+        stat: (s) => ({
+            value: s.transactions.confirmedCount.toLocaleString(),
+            label: `confirmed · ${s.transactions.pendingCount.toLocaleString()} pending`,
+        }),
     },
 ];
 
@@ -170,6 +196,8 @@ function FinanceDashboardContent() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [revealed, setRevealed] = useState(false);
+    const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
+    const [elapsed, setElapsed] = useState(0);
 
     const mounted = useRef(true);
 
@@ -195,6 +223,7 @@ function FinanceDashboardContent() {
 
             if (!mounted.current) return;
             setSummary(sum);
+            setUpdatedAt(new Date());
             setRecentTransactions(
                 [...txs]
                     .sort(
@@ -219,6 +248,20 @@ function FinanceDashboardContent() {
     useEffect(() => {
         load();
     }, [load]);
+
+    // Elapsed timer while loading, so waiting feels accounted for.
+    useEffect(() => {
+        if (!loading) {
+            setElapsed(0);
+            return;
+        }
+        const started = Date.now();
+        const id = setInterval(
+            () => setElapsed(Math.floor((Date.now() - started) / 1000)),
+            1000,
+        );
+        return () => clearInterval(id);
+    }, [loading]);
 
     // Let charts animate in once the data has landed.
     useEffect(() => {
@@ -271,6 +314,8 @@ function FinanceDashboardContent() {
     );
 
     const ready = !loading && !error && summary !== null;
+    // On a failed refresh we keep the last good data on screen.
+    const showBody = !error || summary !== null;
     const pct = summary ? Math.round(summary.assessments.collectionRate * 100) : 0;
 
     // Derived for the ring's second arc: outstanding as a share of billed.
@@ -291,7 +336,9 @@ function FinanceDashboardContent() {
     // -------------------------------------------------------------------------
 
     return (
-        <div className="space-y-5">
+        <div className="w-full min-w-0 max-w-full space-y-5 pb-20 sm:pb-0">
+            <style>{`@keyframes finSlide{0%{transform:translateX(-100%)}100%{transform:translateX(500%)}}`}</style>
+
             {/* Header */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3">
@@ -309,53 +356,164 @@ function FinanceDashboardContent() {
                 </div>
 
                 <div className="flex items-center gap-2">
+                    {updatedAt && (
+                        <span className="mr-1 hidden text-xs text-zinc-500 md:block dark:text-zinc-400">
+                            Updated{" "}
+                            {updatedAt.toLocaleTimeString("en-KE", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                            })}
+                        </span>
+                    )}
                     <button
                         type="button"
                         onClick={load}
                         disabled={loading}
                         title="Refresh"
                         aria-label="Refresh finance data"
-                        className={`flex h-10 w-10 items-center justify-center rounded-sm text-zinc-500 transition-colors hover:bg-[#0B1E3D]/5 hover:text-[#0B1E3D] disabled:opacity-50 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white ${FOCUS_RING}`}
+                        className={`flex h-11 w-11 items-center justify-center rounded-sm border border-zinc-200 bg-white text-zinc-500 shadow-sm transition-colors hover:bg-zinc-50 hover:text-[#0B1E3D] disabled:opacity-60 dark:border-white/15 dark:bg-white/5 dark:text-zinc-300 dark:hover:bg-white/10 dark:hover:text-white ${FOCUS_RING}`}
                     >
                         <RefreshCw
-                            className={`h-4.5 w-4.5 ${loading ? "animate-spin" : ""}`}
+                            className={`h-4.5 w-4.5 ${loading ? "motion-safe:animate-spin" : ""}`}
                         />
                     </button>
 
                     <Link
                         href="/finance/transactions/new"
-                        className={`inline-flex h-10 items-center justify-center gap-2 rounded-sm bg-[#0B1E3D] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#0B1E3D]/90 active:bg-[#0B1E3D]/80 dark:bg-orange-400 dark:text-[#0B1E3D] dark:hover:bg-orange-300 dark:active:bg-orange-500 ${FOCUS_RING} focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#0B1E3D]`}
+                        className={`hidden h-11 items-center justify-center gap-2 rounded-sm bg-orange-500 px-5 text-sm font-semibold text-white shadow-sm shadow-blue-950/30 transition-colors hover:bg-orange-400 active:bg-orange-600 sm:inline-flex ${FOCUS_RING} ${FOCUS_OFFSET}`}
                     >
-                        <Plus className="h-4 w-4 text-orange-400 dark:text-[#0B1E3D]" />
+                        <Plus className="h-4 w-4" />
                         Record payment
                     </Link>
                 </div>
             </div>
 
-            {/* Error */}
+            {/* Progress: visible whenever data is being fetched */}
+            {loading && (
+                <div
+                    role="progressbar"
+                    aria-label="Loading finance data"
+                    className="relative h-1 overflow-hidden rounded-sm bg-orange-400/15"
+                >
+                    <div className="absolute inset-y-0 left-0 w-1/5 rounded-sm bg-orange-500 motion-safe:animate-[finSlide_1.4s_ease-in-out_infinite] motion-reduce:w-full motion-reduce:opacity-50" />
+                </div>
+            )}
+
+            {/* First load: say what is happening and how long it has taken */}
+            {loading && !summary && !error && (
+                <div
+                    role="status"
+                    className="flex items-center gap-3 rounded-sm border border-blue-200 border-l-4 border-l-blue-500 bg-blue-50 p-3 text-sm text-blue-900 dark:border-blue-400/20 dark:border-l-blue-400 dark:bg-blue-500/10 dark:text-blue-100"
+                >
+                    <LoaderCircle className="h-4 w-4 shrink-0 motion-safe:animate-spin" />
+                    <p className="min-w-0 flex-1">
+                        Loading the finance summary.{" "}
+                        {elapsed >= 8
+                            ? "Still working. Large ledgers can take a little longer."
+                            : "Gathering fees, payments and balances."}
+                    </p>
+                    <span className="shrink-0 text-xs tabular-nums opacity-70">{elapsed}s</span>
+                </div>
+            )}
+
+            {/* Error: specific, recoverable, keeps old data if there is any */}
             {error && (
                 <div
                     role="alert"
-                    className="flex items-center gap-3 rounded-sm border border-red-200 border-l-4 border-l-red-500 bg-red-50 p-3.5 text-red-700 dark:border-red-500/20 dark:border-l-red-500 dark:bg-red-500/10 dark:text-red-300"
+                    className="flex flex-col gap-3 rounded-sm border border-red-200 border-l-4 border-l-red-500 bg-red-50 p-3.5 text-red-700 sm:flex-row sm:items-center dark:border-red-500/20 dark:border-l-red-500 dark:bg-red-500/10 dark:text-red-300"
                 >
                     <AlertCircle className="h-5 w-5 shrink-0" />
-                    <p className="min-w-0 flex-1 text-sm">{error}</p>
+                    <div className="min-w-0 flex-1 text-sm">
+                        <p className="font-semibold">Couldn’t load the finance summary</p>
+                        <p className="mt-0.5 break-words opacity-90">
+                            {error}
+                            {summary !== null && " Showing the last data that loaded."}
+                        </p>
+                    </div>
                     <button
                         type="button"
                         onClick={load}
-                        className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-sm px-2.5 text-xs font-semibold transition-colors hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 dark:hover:bg-red-500/20"
+                        disabled={loading}
+                        className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-sm bg-red-600 px-3.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-red-500 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2"
                     >
                         <RefreshCw className="h-3.5 w-3.5" />
-                        Retry
+                        Try again
                     </button>
                 </div>
             )}
 
+            {/* The three places finance work happens: kept big and first */}
+            <section aria-labelledby="finance-modules-title">
+                <h2
+                    id="finance-modules-title"
+                    className="mb-2.5 text-sm text-zinc-500 dark:text-zinc-400"
+                >
+                    Set the price, bill the student, record the payment.
+                </h2>
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                    {modules.map((m) => {
+                        const Icon = m.icon;
+                        const stat = summary ? m.stat(summary) : null;
+                        return (
+                            <Link
+                                key={m.href}
+                                href={m.href}
+                                className={`group relative flex min-w-0 flex-col gap-4 overflow-hidden rounded-sm border border-zinc-200 bg-white p-5 shadow-sm shadow-blue-950/10 transition-all hover:border-orange-400/70 hover:shadow-lg hover:shadow-blue-950/15 active:bg-zinc-50 md:hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:border-white/10 dark:bg-[#0B1E3D] dark:hover:border-orange-400/60 dark:hover:shadow-blue-950/50 dark:active:bg-[#0d2347] ${FOCUS_RING} ${FOCUS_OFFSET}`}
+                            >
+                                <span
+                                    aria-hidden
+                                    className="absolute inset-x-0 top-0 h-0.5 origin-left scale-x-25 bg-orange-400 transition-transform duration-300 group-hover:scale-x-100 motion-reduce:transition-none"
+                                />
+                                <div className="flex items-start gap-3.5">
+                                    <span
+                                        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-sm ${TONES[m.tone]}`}
+                                    >
+                                        <Icon className="h-6 w-6" strokeWidth={2} />
+                                    </span>
+                                    <div className="min-w-0">
+                                        <h3 className="text-base font-semibold text-[#0B1E3D] dark:text-white">
+                                            {m.title}
+                                        </h3>
+                                        <p className="mt-1 text-sm leading-5 text-zinc-500 dark:text-zinc-400">
+                                            {m.description}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="mt-auto flex items-end justify-between gap-3 border-t border-zinc-100 pt-3 dark:border-white/10">
+                                    <div className="min-w-0">
+                                        {stat ? (
+                                            <>
+                                                <p className="truncate text-lg font-bold leading-tight tabular-nums text-[#0B1E3D] dark:text-white">
+                                                    {stat.value}
+                                                </p>
+                                                <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">
+                                                    {stat.label}
+                                                </p>
+                                            </>
+                                        ) : (
+                                            <div className="space-y-1.5" aria-hidden>
+                                                <div className="h-5 w-24 animate-pulse rounded-sm bg-zinc-200 dark:bg-white/10" />
+                                                <div className="h-3 w-32 animate-pulse rounded-sm bg-zinc-100 dark:bg-white/5" />
+                                            </div>
+                                        )}
+                                    </div>
+                                    <span className="inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-orange-600 dark:text-orange-400">
+                                        Open
+                                        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" />
+                                    </span>
+                                </div>
+                            </Link>
+                        );
+                    })}
+                </div>
+            </section>
+
             {/* Chapter 1: the headline story */}
-            {!error && (
+            {showBody && (
                 <section
                     aria-label="Fee collection overview"
-                    className="relative overflow-hidden rounded-sm bg-[#0B1E3D] p-5 text-white ring-1 ring-inset ring-white/10 sm:p-6"
+                    className="relative overflow-hidden rounded-sm bg-[#0B1E3D] p-5 text-white shadow-sm shadow-blue-950/30 ring-1 ring-inset ring-white/10 sm:p-6"
                 >
                     <span
                         aria-hidden
@@ -403,7 +561,7 @@ function FinanceDashboardContent() {
                                 />
                             </svg>
                             <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                {loading || !summary ? (
+                                {!summary ? (
                                     <div className="h-8 w-16 animate-pulse rounded-sm bg-white/10" />
                                 ) : (
                                     <>
@@ -426,7 +584,7 @@ function FinanceDashboardContent() {
                                     Fee collection
                                 </p>
 
-                                {loading || !summary ? (
+                                {!summary ? (
                                     <div className="mt-2 space-y-2">
                                         <div className="h-7 w-3/4 animate-pulse rounded-sm bg-white/10" />
                                         <div className="h-4 w-full max-w-md animate-pulse rounded-sm bg-white/10" />
@@ -451,8 +609,8 @@ function FinanceDashboardContent() {
                                             is still outstanding across{" "}
                                             {summary.assessments.activeCount} active{" "}
                                             {summary.assessments.activeCount === 1
-                                                ? "assessment"
-                                                : "assessments"}
+                                                ? "student fee"
+                                                : "student fees"}
                                             .
                                         </p>
                                     </>
@@ -485,49 +643,61 @@ function FinanceDashboardContent() {
                                         <span className="h-2.5 w-2.5 rounded-sm bg-emerald-400" />
                                         Collected
                                         <span className="font-semibold tabular-nums text-white">
-                                            {loading || !summary ? "—" : formatCurrency(summary.assessments.totalPaid)}
+                                            {!summary ? "—" : formatCurrency(summary.assessments.totalPaid)}
                                         </span>
                                     </span>
                                     <span className="inline-flex items-center gap-1.5">
                                         <span className="h-2.5 w-2.5 rounded-sm bg-orange-400" />
                                         Outstanding
                                         <span className="font-semibold tabular-nums text-white">
-                                            {loading || !summary ? "—" : formatCurrency(summary.assessments.outstanding)}
+                                            {!summary ? "—" : formatCurrency(summary.assessments.outstanding)}
                                         </span>
                                     </span>
                                 </div>
                             </div>
 
-                            {/* Supporting facts */}
-                            <div className="flex flex-wrap gap-2">
-                                {[
-                                    {
-                                        icon: Hourglass,
-                                        label: "Active",
-                                        value: summary?.assessments.activeCount ?? 0,
-                                    },
-                                    {
-                                        icon: CheckCircle2,
-                                        label: "Completed",
-                                        value: summary?.assessments.completedCount ?? 0,
-                                    },
-                                    {
-                                        icon: Layers,
-                                        label: "Fee structures",
-                                        value: summary?.assessments.activeStructures ?? 0,
-                                    },
-                                ].map(({ icon: Icon, label, value }) => (
-                                    <span
-                                        key={label}
-                                        className="inline-flex h-8 items-center gap-2 rounded-sm bg-white/8 px-2.5 text-xs text-white/70 ring-1 ring-inset ring-white/10"
-                                    >
-                                        <Icon className="h-3.5 w-3.5 text-orange-400" />
-                                        {label}
-                                        <span className="font-semibold tabular-nums text-white">
-                                            {loading || !summary ? "—" : value.toLocaleString()}
+                            {/* Supporting facts + View Payments */}
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                {/* Supporting facts */}
+                                <div className="flex flex-wrap items-center gap-2">
+                                    {[
+                                        {
+                                            icon: Hourglass,
+                                            label: "Active",
+                                            value: summary?.assessments.activeCount ?? 0,
+                                        },
+                                        {
+                                            icon: CheckCircle2,
+                                            label: "Completed",
+                                            value: summary?.assessments.completedCount ?? 0,
+                                        },
+                                        {
+                                            icon: Layers,
+                                            label: "Fee structures",
+                                            value: summary?.assessments.activeStructures ?? 0,
+                                        },
+                                    ].map(({ icon: Icon, label, value }) => (
+                                        <span
+                                            key={label}
+                                            className="inline-flex h-8 shrink-0 items-center gap-2 rounded-sm bg-white/8 px-2.5 text-xs text-white/70 ring-1 ring-inset ring-white/10"
+                                        >
+                                            <Icon className="h-3.5 w-3.5 shrink-0 text-orange-400" />
+                                            <span>{label}</span>
+                                            <span className="font-semibold tabular-nums text-white">
+                                                {!summary ? "—" : value.toLocaleString()}
+                                            </span>
                                         </span>
-                                    </span>
-                                ))}
+                                    ))}
+                                </div>
+
+                                {/* View Payments */}
+                                <Link
+                                    href="/finance/student-payments"
+                                    className="inline-flex h-8 shrink-0 items-center justify-center gap-2 self-start rounded-sm bg-orange-500 px-3 text-xs font-semibold text-white transition-colors hover:bg-orange-600 sm:self-auto"
+                                >
+                                    View Payments
+                                    <ArrowUpRight className="h-3.5 w-3.5" />
+                                </Link>
                             </div>
                         </div>
                     </div>
@@ -535,7 +705,7 @@ function FinanceDashboardContent() {
             )}
 
             {/* Chapter 2: what is happening this month */}
-            {!error && (
+            {showBody && (
                 <section
                     aria-label="Payment activity"
                     className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4"
@@ -544,7 +714,7 @@ function FinanceDashboardContent() {
                         label="This month"
                         icon={CalendarDays}
                         tone="sky"
-                        loading={loading || !summary}
+                        loading={!summary}
                         value={formatCurrency(summary?.thisMonth)}
                         hint={
                             summary?.delta == null ? (
@@ -570,7 +740,7 @@ function FinanceDashboardContent() {
                         label="Confirmed payments"
                         icon={CheckCircle2}
                         tone="emerald"
-                        loading={loading || !summary}
+                        loading={!summary}
                         value={formatCurrency(summary?.transactions.totalConfirmed)}
                         hint={
                             summary
@@ -582,7 +752,7 @@ function FinanceDashboardContent() {
                         label="Pending"
                         icon={Hourglass}
                         tone="violet"
-                        loading={loading || !summary}
+                        loading={!summary}
                         value={formatCurrency(summary?.transactions.totalPending)}
                         hint={
                             summary
@@ -594,7 +764,7 @@ function FinanceDashboardContent() {
                         label="Reversed"
                         icon={Undo2}
                         tone="rose"
-                        loading={loading || !summary}
+                        loading={!summary}
                         value={formatCurrency(summary?.transactions.totalReversed)}
                         hint={
                             summary
@@ -605,37 +775,8 @@ function FinanceDashboardContent() {
                 </section>
             )}
 
-            {/* Jump to a module */}
-            <section aria-label="Manage finance" className="grid grid-cols-1 gap-3 md:grid-cols-3">
-                {modules.map((m) => {
-                    const Icon = m.icon;
-                    return (
-                        <Link
-                            key={m.href}
-                            href={m.href}
-                            className={`group flex items-center gap-3 rounded-sm border border-zinc-200/80 bg-white/80 p-3.5 transition-colors hover:border-[#0B1E3D]/40 hover:bg-white dark:border-white/10 dark:bg-white/4 dark:hover:border-orange-400/50 dark:hover:bg-white/8 ${FOCUS_RING}`}
-                        >
-                            <span
-                                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-sm ${TONES[m.tone]}`}
-                            >
-                                <Icon className="h-5 w-5" />
-                            </span>
-                            <span className="min-w-0 flex-1">
-                                <span className="block text-sm font-semibold text-[#0B1E3D] dark:text-white">
-                                    {m.title}
-                                </span>
-                                <span className="block truncate text-xs text-zinc-500 dark:text-zinc-400">
-                                    {m.description}
-                                </span>
-                            </span>
-                            <ArrowRight className="h-4 w-4 shrink-0 text-zinc-300 transition-all group-hover:translate-x-0.5 group-hover:text-orange-500 dark:text-zinc-600 dark:group-hover:text-orange-400" />
-                        </Link>
-                    );
-                })}
-            </section>
-
             {/* Chapter 3: trend and how people pay */}
-            {!error && (
+            {showBody && (
                 <div className="grid gap-3 lg:grid-cols-5">
                     <Panel
                         className="lg:col-span-3"
@@ -644,7 +785,7 @@ function FinanceDashboardContent() {
                         title="Collections over time"
                         subtitle="Confirmed payments, last six months"
                     >
-                        {loading || !summary ? (
+                        {!summary ? (
                             <div className="h-44 animate-pulse rounded-sm bg-zinc-100 dark:bg-white/5" />
                         ) : summary.months.every((m) => m.total === 0) ? (
                             <EmptyHint text="No confirmed payments in the last six months." />
@@ -660,7 +801,7 @@ function FinanceDashboardContent() {
                         title="How people pay"
                         subtitle="Share of confirmed payments"
                     >
-                        {loading || !summary ? (
+                        {!summary ? (
                             <div className="h-44 animate-pulse rounded-sm bg-zinc-100 dark:bg-white/5" />
                         ) : summary.transactions.totalConfirmed === 0 ? (
                             <EmptyHint text="Payment methods will show once payments are confirmed." />
@@ -676,7 +817,7 @@ function FinanceDashboardContent() {
             )}
 
             {/* Chapter 4: what is still owed */}
-            {!error && (
+            {showBody && (
                 <div className="grid gap-3 lg:grid-cols-5">
                     <Panel
                         className="lg:col-span-3"
@@ -686,7 +827,7 @@ function FinanceDashboardContent() {
                         subtitle="Students who still owe the most"
                         action={{ href: "/finance/student-payments", label: "All balances" }}
                     >
-                        {loading || !summary ? (
+                        {!summary ? (
                             <SkeletonRows count={4} />
                         ) : summary.topBalances.length === 0 ? (
                             <EmptyHint text="No outstanding balances. Everyone is paid up." />
@@ -710,7 +851,7 @@ function FinanceDashboardContent() {
                         title="Owed by course"
                         subtitle="Where the balance sits"
                     >
-                        {loading || !summary ? (
+                        {!summary ? (
                             <SkeletonRows count={4} />
                         ) : summary.byCourse.length === 0 ? (
                             <EmptyHint text="No course has an outstanding balance." />
@@ -740,7 +881,7 @@ function FinanceDashboardContent() {
                                                 />
                                             </div>
                                             <p className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400">
-                                                {c.count} active {c.count === 1 ? "assessment" : "assessments"}
+                                                {c.count} active {c.count === 1 ? "student fee" : "student fees"}
                                             </p>
                                         </li>
                                     );
@@ -752,7 +893,7 @@ function FinanceDashboardContent() {
             )}
 
             {/* Chapter 5: the latest events */}
-            {!error && (
+            {showBody && (
                 <Panel
                     icon={Receipt}
                     tone="emerald"
@@ -760,7 +901,7 @@ function FinanceDashboardContent() {
                     subtitle="Latest payments by transaction date"
                     action={{ href: "/finance/transactions", label: "View all" }}
                 >
-                    {loading ? (
+                    {loading && !summary ? (
                         <SkeletonRows count={4} />
                     ) : recentTransactions.length === 0 ? (
                         <div className="flex flex-col items-center gap-3 px-6 py-10 text-center">
@@ -777,9 +918,9 @@ function FinanceDashboardContent() {
                             </div>
                             <Link
                                 href="/finance/transactions/new"
-                                className={`inline-flex h-9 items-center gap-1.5 rounded-sm border border-zinc-200 bg-white px-3.5 text-[13px] font-semibold text-[#0B1E3D] transition-colors hover:bg-zinc-100 dark:border-white/15 dark:bg-transparent dark:text-white dark:hover:bg-white/10 ${FOCUS_RING}`}
+                                className={`inline-flex h-9 items-center gap-1.5 rounded-sm bg-orange-500 px-3.5 text-[13px] font-semibold text-white transition-colors hover:bg-orange-400 ${FOCUS_RING}`}
                             >
-                                <Plus className="h-3.5 w-3.5 text-orange-500 dark:text-orange-400" />
+                                <Plus className="h-3.5 w-3.5" />
                                 Record a payment
                             </Link>
                         </div>
@@ -861,6 +1002,17 @@ function FinanceDashboardContent() {
                     )}
                 </Panel>
             )}
+
+            {/* Record payment: always one tap away on phones */}
+            <Link
+                href="/finance/transactions/new"
+                aria-label="Record payment"
+                style={{ bottom: "calc(1.25rem + env(safe-area-inset-bottom, 0px))" }}
+                className={`fixed right-4 z-30 inline-flex h-12 items-center justify-center gap-2 rounded-sm bg-orange-500 px-5 text-sm font-semibold text-white shadow-lg shadow-blue-950/40 transition-colors hover:bg-orange-400 active:bg-orange-600 sm:hidden ${FOCUS_RING} ${FOCUS_OFFSET}`}
+            >
+                <Plus className="h-5 w-5" />
+                Record payment
+            </Link>
         </div>
     );
 }
@@ -872,6 +1024,7 @@ export default function FinanceDashboardPage() {
         </RequireRole>
     );
 }
+
 // ---------------------------------------------------------------------------
 // Presentational bits
 // ---------------------------------------------------------------------------
@@ -953,9 +1106,7 @@ function Panel({
     children: React.ReactNode;
 }) {
     return (
-        <section
-            className={`rounded-sm border border-zinc-200/80 bg-white/80 p-4 dark:border-white/10 dark:bg-white/4 ${className}`}
-        >
+        <section className={`${SURFACE} min-w-0 p-4 ${className}`}>
             <header className="mb-3 flex items-center gap-2.5">
                 <span
                     className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-sm ${TONES[tone]}`}
@@ -1003,7 +1154,7 @@ function KpiCard({
     loading: boolean;
 }) {
     return (
-        <div className="flex items-center gap-3 rounded-sm border border-zinc-200/80 bg-white/80 p-3.5 dark:border-white/10 dark:bg-white/4">
+        <div className={`${SURFACE} flex min-w-0 items-center gap-3 p-3.5`}>
             <span
                 className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-sm ${TONES[tone]}`}
             >

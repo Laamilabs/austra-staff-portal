@@ -364,11 +364,21 @@ function NewTransactionContent() {
                 payload.notes = notes.trim();
             }
 
-            await feeTransactionApi.create(payload);
+            const created = await feeTransactionApi.create(payload);
 
             setSuccess(true);
+
+            // Navigate to the new transaction's detail page. Fall back to
+            // the list if the API response is missing an _id (shouldn't
+            // happen, but avoids pushing "/undefined").
+            const createdId =
+                (created as { _id?: string } | undefined)?._id ?? "";
+            const destination = createdId
+                ? `/finance/transactions/${createdId}`
+                : "/finance/transactions";
+
             setTimeout(() => {
-                router.push("/finance/transactions");
+                router.push(destination);
             }, 900);
         } catch (err: unknown) {
             console.error("Failed to record transaction:", err);
@@ -425,7 +435,7 @@ function NewTransactionContent() {
                         Payment recorded
                     </p>
                     <p className="text-sm text-emerald-700 dark:text-emerald-300">
-                        Redirecting to transactions...
+                        Opening the receipt…
                     </p>
                 </div>
             ) : (

@@ -109,14 +109,14 @@ export interface FeeStructureRef {
 }
 
 // ---------------------------------------------------------------------------
-// Status enum (mirrors StudentFeeStatus on the server)
+// Status + discount enums (mirror the server schemas)
 // ---------------------------------------------------------------------------
 
 /**
  * Lifecycle of a student fee assignment.
  *
  * - `ACTIVE`    — set on create; the amount may still be payable.
- * - `COMPLETED` — set by the backend once `amountPaid >= totalAmount`
+ * - `COMPLETED` — set by the backend once `amountPaid >= netAmount`
  *                 (there is no explicit route for this yet).
  * - `CANCELLED` — soft-delete target of `DELETE /student-fees/:id`.
  *                 Cancelled rows are excluded from most queries and cannot be
@@ -124,12 +124,31 @@ export interface FeeStructureRef {
  */
 export type StudentFeeStatus = "ACTIVE" | "COMPLETED" | "CANCELLED";
 
+/**
+ * How a discount is expressed.
+ *
+ * - `PERCENTAGE` — `discountValue` is a percentage of `totalAmount`
+ *                  (0–100). Recomputed when the fee structure is swapped.
+ * - `FIXED`      — `discountValue` is an absolute amount in the assignment's
+ *                  `currency`. Clamped to `totalAmount` on the server, so a
+ *                  swap to a cheaper structure can't push the net negative.
+ */
+export type DiscountType = "PERCENTAGE" | "FIXED";
+
 // ---------------------------------------------------------------------------
 // Student fee entity
 // ---------------------------------------------------------------------------
 
 /**
- * A fee assignment: one student, one course, one fee structure.
+ * A fee assignment: one student, one course, **one fee structure**.
+ *
+ * Uniqueness on the server is keyed by `(studentId, courseId,
+ * feeStructureId)` while `status != CANCELLED` — **not** by
+ * `(studentId, courseId)` alone. A student may therefore hold several
+ * active assignments on the same course, one per fee structure (e.g.
+ * Semester 1, Semester 2, Semester 3). Any code that used to treat
+ * "student + course" as a single row must now resolve the structure too,
+ * or address the row by its `_id`.
  *
  * - `studentId` / `courseId` / `feeStructureId` are populated on every read
  *   path today. They're typed as `Ref | string` so the client stays correct
@@ -138,6 +157,9 @@ export type StudentFeeStatus = "ACTIVE" | "COMPLETED" | "CANCELLED";
  *   on update while `amountPaid === 0`). It is **not** a live reference —
  *   changing the underlying fee structure after payments have started is
  *   blocked by the backend.
+ * - `discountAmount` is derived on the server from `totalAmount`,
+ *   `discountType`, and `discountValue`. Do not set it directly — use
+ *   `getNetAmount(fee)` when you need "what the student owes".
  * - `amountPaid` is derived from recorded payments; the client never sets it.
  * - `currency` is upper-cased by the schema and defaults to `"KES"`.
  * - Timestamps are added by `@Schema({ timestamps: true })`.
@@ -153,8 +175,38 @@ export interface StudentFee {
 
     /**
      * Snapshot of the fee structure's total at assignment time.
+     * This is the **gross** amount, before discount.
      */
     totalAmount: number;
+
+    /** `undefined` when no discount is applied. */
+    discountType?: DiscountType;
+
+    /**
+     * Raw input, not the computed amount:
+     *   - `PERCENTAGE` → 10 means 10%
+     *   - `FIXED`      → 5000 means KES 5,000
+     * Kept so a fee-structure swap can recompute `discountAmount`.
+     */
+    discountValue?: number;
+
+    /**
+     * Derived on the server: absolute amount knocked off `totalAmount`.
+     * Always `0` when no discount is applied, and never exceeds
+     * `totalAmount`. Read-only for the client.
+     */
+    discountAmount: number;
+
+    /** Free-text justification (e.g. "Merit scholarship"). */
+    discountReason?: string;
+
+    /**
+     * Server virtual: `totalAmount - discountAmount`. Present on every
+     * response because the schema enables `toJSON: { virtuals: true }`.
+     * Prefer `getNetAmount(fee)`, which falls back gracefully if a route
+     * ever omits the virtual.
+     */
+    netAmount?: number;
 
     /**
      * Server-tracked; the client never writes this directly.
@@ -183,9 +235,17 @@ export interface StudentFee {
  *   - `totalAmount` and `currency` come from the referenced FeeStructure
  *   - `amountPaid` is initialised to `0`
  *   - `status` is initialised to `ACTIVE`
+ *   - `discountAmount` is derived from `discountType` + `discountValue`
  *
  * The referenced FeeStructure must exist, be `isActive: true`, and belong to
  * the given `courseId` — otherwise the backend returns 404.
+ *
+ * Multiple active assignments per `(studentId, courseId)` are **allowed**
+ * as long as `feeStructureId` differs — this is how semester-based fee
+ * structures are modelled. Re-assigning the *same* `feeStructureId` for the
+ * same student + course while the previous one is non-cancelled returns
+ * `400 Bad Request`. Cancelling the previous assignment (`DELETE
+ * /student-fees/:id`) frees the slot up again.
  */
 export interface CreateStudentFeeDto {
     /** Student ObjectId. */
@@ -196,6 +256,26 @@ export interface CreateStudentFeeDto {
 
     /** FeeStructure ObjectId. Must belong to `courseId` and be active. */
     feeStructureId: string;
+
+    /**
+     * Optional discount. Omit for no discount.
+     *
+     * - `PERCENTAGE` → `discountValue` must be 0–100.
+     * - `FIXED`      → `discountValue` must be ≤ `feeStructure.totalAmount`.
+     *
+     * Sending `discountType` without `discountValue` (or vice versa) is
+     * rejected with 400.
+     */
+    discountType?: DiscountType;
+
+    /**
+     * Required when `discountType` is set. Percentage or absolute amount
+     * depending on `discountType`.
+     */
+    discountValue?: number;
+
+    /** Free-text justification; max 200 chars. */
+    discountReason?: string;
 }
 
 /**
@@ -203,16 +283,47 @@ export interface CreateStudentFeeDto {
  *
  * PATCH /student-fees/:id
  *
- * Only `feeStructureId` is honoured by the current service. When supplied:
+ * Every field is optional; omitted fields are left untouched.
+ *
+ * **`feeStructureId`** — when supplied:
  *   - the assignment must not be `CANCELLED`
  *   - `amountPaid` must be `0` (no re-assessment after payments)
  *   - the new fee structure must be active and belong to the same course
+ *   - it must not already be attached to another non-cancelled assignment
+ *     for the same student + course
  *
- * Omitted fields are left untouched.
+ * **Discount fields** — when supplied:
+ *   - `discountType: null` clears the entire discount (type, value, reason)
+ *   - `discountType` / `discountValue` edits are blocked once
+ *     `amountPaid > 0` (they change what's owed)
+ *   - `discountReason`-only edits are allowed at any time (they don't
+ *     affect the amount)
+ *   - partial updates are merged onto the current document before range
+ *     validation, so `{ discountValue: 150 }` on an existing `PERCENTAGE`
+ *     discount is rejected just like a full update would be
  */
 export interface UpdateStudentFeeDto {
     /** Optional — swap the fee structure attached to this assignment. */
     feeStructureId?: string;
+
+    /**
+     * Optional — set to a `DiscountType` to change the kind of discount,
+     * or `null` to clear the discount entirely (value + reason too).
+     * Omit to leave the current discount untouched.
+     */
+    discountType?: DiscountType | null;
+
+    /**
+     * Optional — new raw value. Merged with the current `discountType`
+     * before validation, so this can be sent on its own.
+     */
+    discountValue?: number;
+
+    /**
+     * Optional — new reason. Does not affect validation of the amount and
+     * is the only discount field editable after a payment is recorded.
+     */
+    discountReason?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -295,6 +406,67 @@ export function getFeeStructureName(fee: StudentFee): string {
     return ref.name ?? "";
 }
 
+/**
+ * The id of the fee structure attached to an assignment, regardless of
+ * whether it is populated. Useful as a key when grouping multiple
+ * assignments on the same course.
+ */
+export function getFeeStructureId(fee: StudentFee): string {
+    return refId(fee.feeStructureId) ?? "";
+}
+
+// ---------------------------------------------------------------------------
+// Discount helpers
+// ---------------------------------------------------------------------------
+
+/** `true` when the assignment carries any discount at all. */
+export function hasDiscount(fee: StudentFee): boolean {
+    return Boolean(fee.discountType) && (fee.discountAmount ?? 0) > 0;
+}
+
+/**
+ * What the student actually owes: `totalAmount - discountAmount`.
+ *
+ * Prefers the server's `netAmount` virtual when present, and falls back to
+ * computing it locally — same formula, same rounding, so the two should
+ * agree. Clamped to `0` so a stale `discountAmount > totalAmount` (from a
+ * pre-hook document loaded before a structure swap persisted) can never
+ * produce a negative payable amount in the UI.
+ */
+export function getNetAmount(fee: StudentFee): number {
+    if (typeof fee.netAmount === "number") {
+        return Math.max(0, fee.netAmount);
+    }
+    return Math.max(0, fee.totalAmount - (fee.discountAmount ?? 0));
+}
+
+/**
+ * Human-readable summary of the discount, e.g. `"10% (Merit scholarship)"`
+ * or `"KES 5,000 (Staff waiver)"`. Returns `""` when no discount is set.
+ *
+ * Percentages render the raw `discountValue`, not a recomputed figure, so
+ * they stay stable across fee-structure swaps.
+ */
+export function getDiscountLabel(
+    fee: StudentFee,
+    currency = fee.currency,
+): string {
+    if (!fee.discountType || fee.discountValue == null) return "";
+
+    const valueLabel =
+        fee.discountType === "PERCENTAGE"
+            ? `${fee.discountValue}%`
+            : new Intl.NumberFormat("en-KE", {
+                  style: "currency",
+                  currency,
+                  maximumFractionDigits: 2,
+              }).format(fee.discountValue);
+
+    return fee.discountReason
+        ? `${valueLabel} (${fee.discountReason})`
+        : valueLabel;
+}
+
 // ---------------------------------------------------------------------------
 // API client
 // ---------------------------------------------------------------------------
@@ -324,12 +496,41 @@ export const studentFeeApi = {
         return data;
     },
 
-    async getByStudentAndCourse(
+    /**
+     * All active fee assignments for one student on one course.
+     *
+     * Returns an **array** — a student may hold multiple assignments on the
+     * same course (e.g. Semester 1, Semester 2, Semester 3 fee structures).
+     * `[]` means no assignments exist yet.
+     *
+     * If you need to resolve which row a payment applies to, take an
+     * explicit `feeStructureId` from the UI and use
+     * `getByStudentCourseAndStructure`, or address the row by its `_id`.
+     */
+    async getAllByStudentAndCourse(
         studentId: string,
         courseId: string,
+    ): Promise<StudentFee[]> {
+        const { data } = await api.get<StudentFee[]>(
+            `/student-fees/by-student/${studentId}/course/${courseId}`,
+        );
+        return data;
+    },
+
+    /**
+     * The specific assignment for a student + course + fee structure.
+     *
+     * Returns `StudentFee` on success, throws (404) when no non-cancelled
+     * assignment exists for that triple. Useful for idempotency checks
+     * before `create` (the exact rule the backend enforces).
+     */
+    async getByStudentCourseAndStructure(
+        studentId: string,
+        courseId: string,
+        feeStructureId: string,
     ): Promise<StudentFee> {
         const { data } = await api.get<StudentFee>(
-            `/student-fees/by-student/${studentId}/course/${courseId}`,
+            `/student-fees/by-student/${studentId}/course/${courseId}/structure/${feeStructureId}`,
         );
         return data;
     },

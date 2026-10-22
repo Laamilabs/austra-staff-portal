@@ -120,7 +120,7 @@ export default function FeeStructuresPage() {
     }, [structures]);
 
     return (
-        <div className="mx-auto max-w-fulll px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-full px-4 py-8 sm:px-6 lg:px-8">
             {/* Header */}
             <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
