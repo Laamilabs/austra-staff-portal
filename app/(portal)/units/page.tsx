@@ -26,19 +26,23 @@ type TypeFilter = "ALL" | "CORE" | "BASIC" | "COMMON" | "OPTIONAL";
 type SortKey = "code" | "name" | "createdAt";
 
 // ---------------------------------------------------------------------------
-// Tokens (match the dashboard: flat surfaces, 1px strokes, rounded-sm,
-// blue + orange in both themes)
+// Theme tokens — navy #0B1E3D is structure, orange is accent
 // ---------------------------------------------------------------------------
 
 const CARD =
-  "rounded-sm border border-zinc-900/[0.08] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)] dark:border-white/[0.09] dark:bg-[#111c36]";
+  "rounded-sm border border-zinc-200 bg-white shadow-sm shadow-blue-950/5 dark:border-white/10 dark:bg-[#0B1E3D]";
 
 const FIELD =
-  "h-10 w-full rounded-sm border border-zinc-300 bg-white px-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-[#0A5BC4] focus:outline-none focus:ring-2 focus:ring-[#0A5BC4]/25 dark:border-white/15 dark:bg-white/[0.05] dark:text-white dark:placeholder:text-zinc-500 dark:focus:border-orange-400 dark:focus:ring-orange-400/30";
+  "h-10 w-full rounded-sm border border-zinc-300 bg-white px-3 text-sm text-[#0B1E3D] placeholder:text-zinc-400 transition-colors hover:bg-zinc-50 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-400/30 dark:border-white/15 dark:bg-white/[0.05] dark:text-white dark:placeholder:text-zinc-500 dark:hover:bg-white/[0.08]";
 
 const FOCUS_RING =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-1 focus-visible:ring-offset-white dark:focus-visible:ring-offset-[#111c36]";
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-1 focus-visible:ring-offset-white dark:focus-visible:ring-offset-[#0B1E3D]";
 
+const BTN_ICON =
+  "flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-sm border border-zinc-300 bg-white text-[#0B1E3D] transition-colors hover:bg-zinc-50 disabled:opacity-50 dark:border-white/15 dark:bg-white/[0.05] dark:text-white dark:hover:bg-white/10";
+
+// Unit type meta — semantic colors (Core = essential, Basic = foundational,
+// Common = shared). Kept distinct so users can scan types at a glance.
 const TYPE_META: Record<
   "CORE" | "BASIC" | "COMMON",
   { label: string; badge: string; accent: string; icon: typeof Layers }
@@ -46,21 +50,21 @@ const TYPE_META: Record<
   CORE: {
     label: "Core",
     badge:
-      "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800",
+      "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-400/25",
     accent: "bg-emerald-500",
     icon: CheckCircle2,
   },
   BASIC: {
     label: "Basic",
     badge:
-      "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/40 dark:text-violet-300 dark:border-violet-800",
+      "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-500/10 dark:text-violet-300 dark:border-violet-400/25",
     accent: "bg-violet-500",
     icon: Layers,
   },
   COMMON: {
     label: "Common",
     badge:
-      "bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800",
+      "bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:border-sky-400/25",
     accent: "bg-sky-500",
     icon: Layers,
   },
@@ -98,27 +102,27 @@ function UnitCard({ unit }: { unit: Unit }) {
         href={`/units/${unit._id}`}
         className={`group relative flex h-full flex-col overflow-hidden ${CARD} p-3 pl-4 transition-colors hover:border-orange-400/70 sm:p-4 sm:pl-5 ${FOCUS_RING}`}
       >
-        {/* type accent bar */}
+        {/* type accent bar — semantic color, not theme color */}
         <span
           aria-hidden
           className={`absolute inset-y-0 left-0 w-1 ${accent}`}
         />
 
         <div className="flex items-start justify-between gap-2">
-          <span className="rounded-sm bg-[#0A5BC4]/10 px-2 py-0.5 font-mono text-xs font-bold text-[#0A5BC4] dark:bg-orange-400/15 dark:text-orange-400">
+          <span className="rounded-sm bg-[#0B1E3D]/5 px-2 py-0.5 font-mono text-xs font-bold text-[#0B1E3D] ring-1 ring-inset ring-[#0B1E3D]/10 dark:bg-orange-400/15 dark:text-orange-300 dark:ring-orange-400/25">
             {unit.code}
           </span>
           <div className="flex flex-wrap justify-end gap-1">
             <TypeBadge type={unit.type} />
             {unit.optionalUnit && (
-              <span className="inline-flex items-center gap-1 rounded-sm border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+              <span className="inline-flex items-center gap-1 rounded-sm border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-300">
                 <Tag className="h-3 w-3" aria-hidden /> Elective
               </span>
             )}
           </div>
         </div>
 
-        <h3 className="mt-3 line-clamp-2 text-base font-semibold leading-snug text-[#082B66] dark:text-white">
+        <h3 className="mt-3 line-clamp-2 text-base font-semibold leading-snug text-[#0B1E3D] dark:text-white">
           {unit.name}
         </h3>
 
@@ -128,17 +132,17 @@ function UnitCard({ unit }: { unit: Unit }) {
           </p>
         )}
 
-        <div className="mt-auto flex items-center justify-between gap-2 border-t border-zinc-900/[0.07] pt-3 dark:border-white/10">
+        <div className="mt-auto flex items-center justify-between gap-2 border-t border-zinc-100 pt-3 dark:border-white/10">
           <span className="flex min-w-0 items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400">
             <GraduationCap
-              className="h-3.5 w-3.5 shrink-0 text-[#0A5BC4] dark:text-[#7DB6FF]"
+              className="h-3.5 w-3.5 shrink-0 text-[#0B1E3D] dark:text-orange-400"
               aria-hidden
             />
             <span className="truncate">
               {course ? `${course.courseCode} · ${course.name}` : "No course"}
             </span>
           </span>
-          <span className="inline-flex shrink-0 items-center gap-0.5 text-xs font-semibold text-[#0A5BC4] dark:text-orange-400">
+          <span className="inline-flex shrink-0 items-center gap-0.5 text-xs font-semibold text-[#0B1E3D] dark:text-orange-400">
             <span className="hidden sm:inline">Details</span>
             <ChevronRight
               className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
@@ -301,15 +305,15 @@ export default function UnitsPage() {
   ];
 
   return (
-    <div className="mx-auto w-full max-w-full space-y-3 p-3 pb-24 sm:space-y-4 sm:p-5 sm:pb-6 lg:p-6">
+    <div className="mx-auto w-full max-w-full space-y-3 pb-24 sm:space-y-4 sm:p-5 sm:pb-6 lg:p-6">
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-[#0A5BC4] text-white sm:h-11 sm:w-11">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-[#0B1E3D] text-white ring-1 ring-inset ring-[#0B1E3D] sm:h-11 sm:w-11 dark:ring-white/15">
             <BookOpen className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden />
           </span>
           <div className="min-w-0">
-            <h1 className="text-xl font-semibold leading-tight tracking-tight text-[#082B66] dark:text-white sm:text-2xl">
+            <h1 className="text-xl font-semibold leading-tight tracking-tight text-[#0B1E3D] dark:text-white sm:text-2xl">
               Academic Units
             </h1>
             <p className="hidden text-sm text-zinc-600 dark:text-zinc-400 sm:block">
@@ -322,7 +326,7 @@ export default function UnitsPage() {
           <button
             onClick={fetchData}
             disabled={loading}
-            className={`flex h-10 w-10 cursor-pointer items-center justify-center rounded-sm border border-zinc-300 bg-white text-zinc-700 transition-colors hover:bg-zinc-50 disabled:opacity-50 dark:border-white/15 dark:bg-white/[0.05] dark:text-zinc-200 dark:hover:bg-white/10 ${FOCUS_RING}`}
+            className={`${BTN_ICON} ${FOCUS_RING}`}
             title="Refresh data"
             aria-label="Refresh data"
           >
@@ -333,7 +337,7 @@ export default function UnitsPage() {
           </button>
           <Link
             href="/units/new"
-            className="hidden h-10 items-center gap-2 rounded-sm bg-orange-400 px-4 text-sm font-semibold text-[#082B66] transition-colors hover:bg-orange-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#082B66] dark:focus-visible:ring-white sm:inline-flex"
+            className={`hidden h-10 items-center gap-2 rounded-sm bg-orange-400 px-4 text-sm font-semibold text-[#0B1E3D] shadow-sm shadow-orange-500/20 transition-colors hover:bg-orange-300 active:bg-orange-500 sm:inline-flex ${FOCUS_RING}`}
           >
             <Plus className="h-4 w-4" aria-hidden />
             Add unit
@@ -362,7 +366,7 @@ export default function UnitsPage() {
               <button
                 onClick={() => setSearchQuery("")}
                 aria-label="Clear search"
-                className="absolute right-1.5 top-1.5 flex h-7 w-7 cursor-pointer items-center justify-center rounded-sm text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/10"
+                className={`absolute right-1.5 top-1.5 flex h-7 w-7 cursor-pointer items-center justify-center rounded-sm text-zinc-500 hover:bg-[#0B1E3D]/5 hover:text-[#0B1E3D] dark:hover:bg-white/10 dark:hover:text-white ${FOCUS_RING}`}
               >
                 <X className="h-4 w-4" aria-hidden />
               </button>
@@ -393,7 +397,7 @@ export default function UnitsPage() {
             </select>
             <button
               onClick={toggleSortOrder}
-              className={`flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-sm border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-white/15 dark:bg-white/[0.05] dark:text-zinc-200 dark:hover:bg-white/10 ${FOCUS_RING}`}
+              className={`${BTN_ICON} ${FOCUS_RING}`}
               title={sortOrder === "asc" ? "Ascending" : "Descending"}
               aria-label={`Sort ${sortOrder === "asc" ? "ascending" : "descending"}`}
             >
@@ -402,11 +406,11 @@ export default function UnitsPage() {
           </div>
         </div>
 
-        {/* Type chips: swipeable on mobile */}
+        {/* Type chips: swipeable on mobile, wrap on desktop */}
         <div
           role="group"
           aria-label="Filter by type"
-          className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-wrap sm:overflow-visible"
         >
           {CHIPS.map(({ key, label }) => {
             const active = unitTypeFilter === key;
@@ -417,15 +421,15 @@ export default function UnitsPage() {
                 aria-pressed={active}
                 className={`flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-sm border px-3 text-xs font-semibold transition-colors ${FOCUS_RING} ${
                   active
-                    ? "border-[#0A5BC4] bg-[#0A5BC4] text-white dark:border-orange-400 dark:bg-orange-400 dark:text-[#082B66]"
-                    : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-white/15 dark:bg-white/[0.05] dark:text-zinc-200 dark:hover:bg-white/10"
+                    ? "border-[#0B1E3D] bg-[#0B1E3D] text-white dark:border-orange-400 dark:bg-orange-400 dark:text-[#0B1E3D]"
+                    : "border-zinc-300 bg-white text-[#0B1E3D] hover:bg-zinc-50 dark:border-white/15 dark:bg-white/[0.05] dark:text-zinc-200 dark:hover:bg-white/10"
                 }`}
               >
                 {label}
                 <span
                   className={`rounded-sm px-1.5 text-[11px] ${
                     active
-                      ? "bg-white/20"
+                      ? "bg-white/20 dark:bg-[#0B1E3D]/20"
                       : "bg-zinc-100 text-zinc-600 dark:bg-white/10 dark:text-zinc-300"
                   }`}
                 >
@@ -436,15 +440,15 @@ export default function UnitsPage() {
           })}
         </div>
 
-        <div className="flex items-center justify-between gap-3 border-t border-zinc-900/[0.07] pt-3 text-xs text-zinc-600 dark:border-white/10 dark:text-zinc-400">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-100 pt-3 text-xs text-zinc-600 dark:border-white/10 dark:text-zinc-400">
           <span>
-            Showing <strong>{filteredAndSortedUnits.length}</strong> of{" "}
-            <strong>{units.length}</strong> units
+            Showing <strong className="text-[#0B1E3D] dark:text-white">{filteredAndSortedUnits.length}</strong> of{" "}
+            <strong className="text-[#0B1E3D] dark:text-white">{units.length}</strong> units
           </span>
           {hasActiveFilters && (
             <button
               onClick={resetFilters}
-              className="cursor-pointer font-semibold text-[#0A5BC4] hover:underline dark:text-orange-400"
+              className={`cursor-pointer font-semibold text-[#0B1E3D] hover:underline dark:text-orange-400 ${FOCUS_RING}`}
             >
               Clear filters
             </button>
@@ -456,7 +460,7 @@ export default function UnitsPage() {
       {error && (
         <div
           role="alert"
-          className="flex items-center gap-3 rounded-sm border border-red-200 bg-red-50 p-3 text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-400"
+          className="flex items-center gap-3 rounded-sm border border-red-200 bg-red-50 p-3 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300"
         >
           <AlertCircle className="h-5 w-5 shrink-0" aria-hidden />
           <p className="flex-1 text-sm">{error}</p>
@@ -477,14 +481,12 @@ export default function UnitsPage() {
           ))}
         </ul>
       ) : filteredAndSortedUnits.length === 0 ? (
-        <div
-          className={`${CARD} border-dashed px-4 py-12 text-center`}
-        >
+        <div className={`${CARD} border-dashed px-4 py-12 text-center`}>
           <FileText
             className="mx-auto mb-3 h-12 w-12 text-zinc-300 dark:text-zinc-600"
             aria-hidden
           />
-          <h3 className="text-lg font-semibold text-zinc-800 dark:text-zinc-100">
+          <h3 className="text-lg font-semibold text-[#0B1E3D] dark:text-white">
             No units found
           </h3>
           <p className="mx-auto mt-1 max-w-sm text-sm text-zinc-600 dark:text-zinc-400">
@@ -493,7 +495,7 @@ export default function UnitsPage() {
           {hasActiveFilters && (
             <button
               onClick={resetFilters}
-              className="mt-4 inline-flex h-10 cursor-pointer items-center rounded-sm bg-[#0A5BC4] px-4 text-sm font-semibold text-white hover:bg-[#0B6BE0] dark:bg-orange-400 dark:text-[#082B66] dark:hover:bg-orange-300"
+              className={`mt-4 inline-flex h-10 cursor-pointer items-center rounded-sm bg-orange-400 px-4 text-sm font-semibold text-[#0B1E3D] transition-colors hover:bg-orange-300 active:bg-orange-500 ${FOCUS_RING}`}
             >
               Clear filters
             </button>
@@ -510,7 +512,7 @@ export default function UnitsPage() {
       {/* Mobile add button */}
       <Link
         href="/units/new"
-        className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-30 inline-flex h-12 items-center gap-2 rounded-sm bg-orange-400 px-4 text-sm font-bold text-[#082B66] shadow-[0_10px_24px_-8px_rgba(249,115,22,0.8)] active:scale-95 sm:hidden"
+        className={`fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-30 inline-flex h-12 items-center gap-2 rounded-sm bg-orange-400 px-4 text-sm font-bold text-[#0B1E3D] shadow-lg shadow-orange-500/30 transition-transform active:scale-95 sm:hidden ${FOCUS_RING}`}
       >
         <Plus className="h-5 w-5" aria-hidden />
         Add unit
