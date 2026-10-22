@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
+    Banknote,
     BookOpen,
     Building2,
     GraduationCap,
@@ -47,7 +48,6 @@ const FONT_STACK =
 export default function DashboardPage() {
     const { user, isLoading: authLoading, isAuthenticated } = useAuth();
 
-    // Scales the UI up smoothly on 2K → 4K+ displays (no change below 1920px).
     useFluidScale();
 
     const [studentStats, setStudentStats] =
@@ -139,10 +139,10 @@ export default function DashboardPage() {
     const greeting = !now
         ? "Welcome back"
         : now.getHours() < 12
-            ? "Good morning"
-            : now.getHours() < 17
-                ? "Good afternoon"
-                : "Good evening";
+          ? "Good morning"
+          : now.getHours() < 17
+            ? "Good afternoon"
+            : "Good evening";
 
     // ---- Derived metrics ---------------------------------------------------
 
@@ -153,7 +153,7 @@ export default function DashboardPage() {
         if (!studentStats || studentStats.totalEnrollments <= 0) return null;
         return Math.round(
             (studentStats.activeEnrollments / studentStats.totalEnrollments) *
-            100,
+                100,
         );
     }, [studentStats]);
 
@@ -162,7 +162,7 @@ export default function DashboardPage() {
         return Math.round(
             (studentStats.completedEnrollments /
                 studentStats.totalEnrollments) *
-            100,
+                100,
         );
     }, [studentStats]);
 
@@ -192,6 +192,89 @@ export default function DashboardPage() {
     const storyLoading = loading && students === undefined && !financeSummary;
     const kpiLoading = loading && !kpis;
 
+    // ---- Hero blocks (shared between mobile and desktop headers) -----------
+
+    const metaContent = !authLoading ? (
+        <div className="min-w-0">
+            <p className="text-xs font-medium text-orange-300">
+                {greeting}
+                {now && (
+                    <span className="text-blue-200">
+                        {" · "}
+                        {now.toLocaleDateString(undefined, {
+                            weekday: "long",
+                            month: "long",
+                            day: "numeric",
+                        })}
+                    </span>
+                )}
+            </p>
+            <h1 className="mt-0.5 break-words text-xl font-semibold leading-tight tracking-tight sm:text-2xl md:text-3xl lg:text-4xl">
+                {isAuthenticated ? displayName : "Welcome"}
+            </h1>
+            <div className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                <span className="rounded-sm border border-orange-300/50 bg-orange-400/20 px-2 py-0.5 text-xs font-semibold text-orange-200">
+                    {role}
+                </span>
+                <span className="max-w-full truncate text-xs text-blue-100 sm:text-sm">
+                    {displayEmail}
+                </span>
+            </div>
+        </div>
+    ) : (
+        <div className="min-w-0 space-y-2">
+            <div className="h-3 w-32 animate-pulse rounded-sm bg-white/15" />
+            <div className="h-6 w-40 animate-pulse rounded-sm bg-white/15" />
+            <div className="h-4 w-48 animate-pulse rounded-sm bg-white/10" />
+        </div>
+    );
+
+    const statsContent = storyLoading ? (
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+            <div className="h-12 w-full animate-pulse rounded-sm bg-white/10 sm:w-32" />
+            <div className="h-12 w-full animate-pulse rounded-sm bg-white/10 sm:w-32" />
+            <div className="h-12 w-full animate-pulse rounded-sm bg-white/10 sm:w-32" />
+        </div>
+    ) : (
+        <ul className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+            {students !== undefined && (
+                <HeroStat
+                    value={students.toLocaleString()}
+                    label={
+                        courses !== undefined
+                            ? `students · ${courses.toLocaleString()} courses`
+                            : "students"
+                    }
+                />
+            )}
+            {activePct !== null && (
+                <HeroStat value={`${activePct}%`} label="enrollments active" />
+            )}
+            {financeSummary && (
+                <RequireRoleInline roles={["admin", "registrar"]}>
+                    <HeroStat
+                        value={`${collectionRatePct}%`}
+                        label="fees collected"
+                    />
+                </RequireRoleInline>
+            )}
+            {appStats && appsAwaiting > 0 && (
+                <HeroStat
+                    value={appsAwaiting.toLocaleString()}
+                    label="applications waiting"
+                />
+            )}
+            {students === undefined &&
+                activePct === null &&
+                !financeSummary &&
+                !appStats && (
+                    <li className="col-span-2 text-sm text-blue-100">
+                        Your institution at a glance.
+                    </li>
+                )}
+        </ul>
+    );
+
     // ---- Render ------------------------------------------------------------
 
     return (
@@ -203,122 +286,116 @@ export default function DashboardPage() {
                 {/* ============================================================ */}
                 {/* HERO                                                         */}
                 {/* ============================================================ */}
-                {/* ============================================================ */}
-                {/* HERO                                                         */}
-                {/* ============================================================ */}
-                <header className="relative grid grid-cols-[5.5rem_1fr] overflow-hidden rounded-sm border border-white/10 bg-[#0A4AA6] text-white shadow-[0_20px_50px_-28px_rgba(8,43,102,0.8)] sm:grid-cols-[7rem_1fr] md:grid-cols-[9rem_1fr] dark:bg-[#0B3A80]">
+                <header className="overflow-hidden rounded-sm border border-white/10 bg-[#0A4AA6] text-white shadow-[0_20px_50px_-28px_rgba(8,43,102,0.8)] dark:bg-[#0B3A80]">
 
-                    {/* Avatar column — bleeds top / bottom / left */}
-                    <HeroAvatar
-                        src={profileImage}
-                        name={displayName}
-                        initials={initials}
-                        loading={authLoading}
-                        onError={() => setImageFailed(true)}
-                    />
-
-                    {/* Content column */}
-                    <div className="flex min-w-0 flex-col gap-3 p-3 sm:gap-4 sm:p-5 lg:p-6">
-                        <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">
-                            <div className="min-w-0">
-                                <p className="text-xs font-medium text-orange-300">
-                                    {greeting}
-                                    {now && (
-                                        <span className="text-blue-200">
-                                            {" · "}
-                                            {now.toLocaleDateString(undefined, {
-                                                weekday: "long",
-                                                month: "long",
-                                                day: "numeric",
-                                            })}
-                                        </span>
-                                    )}
-                                </p>
-
-                                {authLoading ? (
-                                    <div className="mt-1.5 space-y-2">
-                                        <div className="h-6 w-40 animate-pulse rounded-sm bg-white/15" />
-                                        <div className="h-4 w-48 animate-pulse rounded-sm bg-white/10" />
-                                    </div>
-                                ) : (
-                                    <>
-                                        <h1 className="break-words text-2xl font-semibold leading-tight tracking-tight sm:text-3xl lg:text-4xl">
-                                            {isAuthenticated ? displayName : "Welcome"}
-                                        </h1>
-                                        <div className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1">
-                                            <span className="rounded-sm border border-orange-300/50 bg-orange-400/20 px-2 py-0.5 text-xs font-semibold text-orange-200">
-                                                {role}
-                                            </span>
-                                            <span className="max-w-full truncate text-xs text-blue-100 sm:text-sm">
-                                                {displayEmail}
-                                            </span>
-                                        </div>
-                                    </>
-                                )}
+                    {/* ---------------- Mobile layout ---------------- */}
+                    <div className="md:hidden">
+                        <div className="flex flex-col items-center gap-3 p-4 sm:gap-4 sm:p-5">
+                            {/* Centered square portrait */}
+                            <div className="aspect-square h-40 w-40 overflow-hidden rounded-2xl shadow-xl shadow-black/30 ring-[3px] ring-orange-300/70 ring-offset-2 ring-offset-[#0A4AA6] sm:h-48 sm:w-48 dark:ring-offset-[#0B3A80]">
+                                <HeroAvatar
+                                    src={profileImage}
+                                    name={displayName}
+                                    initials={initials}
+                                    loading={authLoading}
+                                    onError={() => setImageFailed(true)}
+                                />
                             </div>
 
-                            <div className="flex items-center gap-2 md:justify-end">
-                                <RecordPaymentButton variant="hero" />
+                            {/* Centered identity */}
+                            {!authLoading ? (
+                                <div className="text-center">
+                                    <p className="text-xs font-medium text-orange-300">
+                                        {greeting}
+                                        {now && (
+                                            <span className="text-blue-200">
+                                                {" · "}
+                                                {now.toLocaleDateString(
+                                                    undefined,
+                                                    {
+                                                        weekday: "long",
+                                                        month: "long",
+                                                        day: "numeric",
+                                                    },
+                                                )}
+                                            </span>
+                                        )}
+                                    </p>
+                                    <h1 className="mt-0.5 break-words text-2xl font-semibold leading-tight tracking-tight">
+                                        {isAuthenticated
+                                            ? displayName
+                                            : "Welcome"}
+                                    </h1>
+                                    <div className="mt-1.5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1">
+                                        <span className="rounded-sm border border-orange-300/50 bg-orange-400/20 px-2 py-0.5 text-xs font-semibold text-orange-200">
+                                            {role}
+                                        </span>
+                                        <span className="max-w-full truncate text-xs text-blue-100">
+                                            {displayEmail}
+                                        </span>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="flex w-full flex-col items-center space-y-2">
+                                    <div className="h-3 w-32 animate-pulse rounded-sm bg-white/15" />
+                                    <div className="h-7 w-44 animate-pulse rounded-sm bg-white/15" />
+                                    <div className="h-4 w-48 animate-pulse rounded-sm bg-white/10" />
+                                </div>
+                            )}
+
+                            {/* Actions */}
+                            <div className="flex w-full items-stretch gap-2">
+                                <RequireRoleInline
+                                    roles={["admin", "registrar"]}
+                                >
+                                    <Link
+                                        href="/finance/transactions/new"
+                                        className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-sm bg-orange-400 px-3 text-sm font-semibold text-[#082B66] shadow-[0_6px_16px_-8px_rgba(251,146,60,0.9)] ring-1 ring-orange-200/70 transition hover:bg-orange-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                                    >
+                                        <Banknote size={16} aria-hidden />
+                                        Record payment
+                                    </Link>
+                                </RequireRoleInline>
                                 <Link
                                     href="/profile"
-                                    className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-sm bg-white/10 px-4 text-sm font-semibold text-white ring-1 ring-white/25 backdrop-blur-md transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300 sm:flex-none"
+                                    className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-sm bg-white/10 px-3 text-sm font-semibold text-white ring-1 ring-white/25 backdrop-blur-md transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300"
                                 >
                                     <User size={16} aria-hidden />
                                     My profile
                                 </Link>
                             </div>
-                        </div>
 
-                        {/* The story in one line */}
-                        <div>
-                            {storyLoading ? (
-                                <div className="grid grid-cols-2 gap-2 sm:flex">
-                                    <div className="h-12 w-full animate-pulse rounded-sm bg-white/10 sm:w-36" />
-                                    <div className="h-12 w-full animate-pulse rounded-sm bg-white/10 sm:w-36" />
-                                    <div className="h-12 w-full animate-pulse rounded-sm bg-white/10 sm:w-36" />
+                            {/* Stats */}
+                            <div className="w-full">{statsContent}</div>
+                        </div>
+                    </div>
+
+                    {/* ---------------- Desktop layout ---------------- */}
+                    <div className="hidden md:grid md:grid-cols-[9rem_1fr]">
+                        <div className="h-full w-full overflow-hidden">
+                            <HeroAvatar
+                                src={profileImage}
+                                name={displayName}
+                                initials={initials}
+                                loading={authLoading}
+                                onError={() => setImageFailed(true)}
+                            />
+                        </div>
+                        <div className="flex min-w-0 flex-col gap-4 p-6">
+                            <div className="flex items-start justify-between gap-4">
+                                {metaContent}
+                                <div className="flex shrink-0 items-center gap-2">
+                                    <RecordPaymentButton variant="hero" />
+                                    <Link
+                                        href="/profile"
+                                        className="inline-flex h-10 items-center justify-center gap-2 rounded-sm bg-white/10 px-4 text-sm font-semibold text-white ring-1 ring-white/25 backdrop-blur-md transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300"
+                                    >
+                                        <User size={16} aria-hidden />
+                                        My profile
+                                    </Link>
                                 </div>
-                            ) : (
-                                <ul className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-                                    {students !== undefined && (
-                                        <HeroStat
-                                            value={students.toLocaleString()}
-                                            label={
-                                                courses !== undefined
-                                                    ? `students · ${courses.toLocaleString()} courses`
-                                                    : "students"
-                                            }
-                                        />
-                                    )}
-                                    {activePct !== null && (
-                                        <HeroStat
-                                            value={`${activePct}%`}
-                                            label="enrollments active"
-                                        />
-                                    )}
-                                    {financeSummary && (
-                                        <RequireRoleInline roles={["admin", "registrar"]}>
-                                            <HeroStat
-                                                value={`${collectionRatePct}%`}
-                                                label="fees collected"
-                                            />
-                                        </RequireRoleInline>
-                                    )}
-                                    {appStats && appsAwaiting > 0 && (
-                                        <HeroStat
-                                            value={appsAwaiting.toLocaleString()}
-                                            label="applications waiting"
-                                        />
-                                    )}
-                                    {students === undefined &&
-                                        activePct === null &&
-                                        !financeSummary &&
-                                        !appStats && (
-                                            <li className="col-span-2 text-sm text-blue-100">
-                                                Your institution at a glance.
-                                            </li>
-                                        )}
-                                </ul>
-                            )}
+                            </div>
+                            {statsContent}
                         </div>
                     </div>
                 </header>
@@ -390,8 +467,6 @@ export default function DashboardPage() {
 
                 {/* ============================================================ */}
                 {/* BODY                                                         */}
-                {/* Sidebar from xl; main grid goes 1 → 2 → 3 columns on         */}
-                {/* wide / ultrawide screens. Cards adapt via container queries. */}
                 {/* ============================================================ */}
                 <div className="grid gap-3 sm:gap-4 xl:grid-cols-[minmax(0,1fr)_20rem] min-[2400px]:grid-cols-[minmax(0,1fr)_24rem]">
                     <aside
