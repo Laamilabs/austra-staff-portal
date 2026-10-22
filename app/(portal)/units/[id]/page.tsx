@@ -86,7 +86,7 @@ export default function UnitDetailPage() {
 
     if (error && !unit) {
         return (
-            <div className="p-4 sm:p-6 lg:p-8 max-w-full mx-auto space-y-4">
+            <div className="sm:p-4 lg:p-8 max-w-full mx-auto space-y-4">
                 <Link
                     href="/units"
                     className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-500 hover:text-zinc-800 transition-colors dark:text-zinc-400 dark:hover:text-zinc-200"
@@ -102,7 +102,7 @@ export default function UnitDetailPage() {
     }
 
     return (
-        <div className="p-4 sm:p-6 lg:p-8 max-w-full mx-auto space-y-6">
+        <div className="sm:p-4 lg:p-8 max-w-full mx-auto space-y-6">
             {/* Navigation & Actions */}
             <div>
                 <Link

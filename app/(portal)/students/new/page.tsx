@@ -411,7 +411,7 @@ export default function NewStudentPage() {
     // ==========================================================================
 
     return (
-        <div className="min-h-screen bg-zinc-50 px-4 py-6 dark:bg-zinc-950 sm:py-10">
+        <div className="min-h-screen bg-zinc-50 py-6 dark:bg-zinc-950 sm:py-10">
             <div className="mx-auto max-w-full rounded-sm border border-zinc-200 bg-white shadow-lg shadow-zinc-900/5 dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/20 lg:grid lg:grid-cols-[300px_1fr] lg:items-start">
                 {/* ============================================================ */}
                 {/* Sidebar (sticky on lg+)                                      */}

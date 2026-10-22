@@ -268,7 +268,7 @@ export default function EditUnitPage() {
     }
 
     return (
-        <div className="p-4 sm:p-6 lg:p-8 max-w-full mx-auto space-y-6">
+        <div className="sm:p-4 lg:p-8 max-w-full mx-auto space-y-6">
             {/* Navigation & Header */}
             <div>
                 <Link

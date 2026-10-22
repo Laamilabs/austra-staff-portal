@@ -248,7 +248,7 @@ export default function CreateUnitPage({ initialCourseId }: CreateUnitPageProps)
   const backLabel = isCourseLocked ? "Back to Course Details" : "Back to Units";
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-full mx-auto space-y-6">
+    <div className="sm:p-4 lg:p-8 max-w-full mx-auto space-y-6">
       {/* Back Navigation & Page Title */}
       <div>
         <Link
