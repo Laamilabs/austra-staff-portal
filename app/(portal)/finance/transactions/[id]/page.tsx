@@ -455,7 +455,7 @@ export default function TransactionDetailPage() {
     const isReversed = tx.status === "REVERSED";
 
     return (
-        <div className="mx-auto w-full max-w-full px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-full py-6 sm:px-6 lg:px-8">
             {/* Back link */}
             <Link
                 href="/finance/transactions"
