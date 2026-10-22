@@ -371,7 +371,7 @@ function NewFeeStructureContent() {
     // ---------------------------------------------------------------------
 
     return (
-        <div className="mx-auto max-w-full px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-full py-8 sm:px-6 lg:px-8">
             {/* Breadcrumb */}
             <nav className="mb-3 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
                 <Link

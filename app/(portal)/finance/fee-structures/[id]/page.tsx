@@ -155,7 +155,7 @@ export default function FeeStructureDetailPage({
 
     if (error || !structure) {
         return (
-            <div className="mx-auto max-w-full px-4 py-8 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-full py-8 sm:px-6 lg:px-8">
                 <nav className="mb-3 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
                     <Link
                         href="/finance"
@@ -213,7 +213,7 @@ export default function FeeStructureDetailPage({
         typeof structure.courseId === "string" ? structure.courseId : null;
 
     return (
-        <div className="mx-auto max-w-full px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-full py-8 sm:px-6 lg:px-8">
             {/* Breadcrumb */}
             <nav className="mb-3 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
                 <Link
@@ -634,7 +634,7 @@ function Td({
 
 function DetailSkeleton() {
     return (
-        <div className="mx-auto max-w-full px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-full py-8 sm:px-6 lg:px-8">
             <div className="mb-3 h-3 w-48 animate-pulse rounded-sm bg-slate-200 dark:bg-slate-800" />
             <div className="mb-6 flex items-start justify-between gap-4">
                 <div className="space-y-2">

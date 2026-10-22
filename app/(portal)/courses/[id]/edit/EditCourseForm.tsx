@@ -224,7 +224,7 @@ export default function EditCourseForm() {
     if (isLoading) {
         return (
             <main className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-                <div className="mx-auto max-w-full px-4 py-8 ">
+                <div className="mx-auto max-w-full py-8 ">
                     <div className="animate-pulse space-y-6">
                         <div className="h-8 w-48 rounded-sm bg-zinc-200 dark:bg-zinc-800" />
                         <div className="h-4 w-72 rounded-sm bg-zinc-200 dark:bg-zinc-800" />
@@ -247,7 +247,7 @@ export default function EditCourseForm() {
     if (error && !course) {
         return (
             <main className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-                <div className="mx-auto max-w-full px-4 py-8 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-full py-8 sm:px-6 lg:px-8">
                     <Link
                         href="/courses"
                         className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-zinc-400 transition-colors hover:text-[#0B1E3D] dark:hover:text-white"
@@ -305,7 +305,7 @@ export default function EditCourseForm() {
     /* ---------- Form ---------- */
     return (
         <main className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-            <div className="mx-auto max-w-full px-4 py-8 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-full py-8 sm:px-6 lg:px-8">
                 {/* Header */}
                 <div className="mb-8">
                     <Link

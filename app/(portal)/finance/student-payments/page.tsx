@@ -355,7 +355,7 @@ export default function StudentPaymentsPage() {
     /* ---------------- Render ---------------- */
 
     return (
-        <main className="mx-auto w-full min-w-0 max-w-full px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <main className="mx-auto w-full min-w-0 max-w-full py-6 sm:px-6 sm:py-8 lg:px-8">
             <style>{`@keyframes feeSlide{0%{transform:translateX(-100%)}100%{transform:translateX(450%)}}`}</style>
 
             {loading && fees !== null && (

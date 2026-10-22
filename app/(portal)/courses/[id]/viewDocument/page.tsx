@@ -187,7 +187,7 @@ function ViewCourseDocuments() {
     if (isLoading) {
         return (
             <main className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-                <div className="mx-auto max-w-full px-4 py-8 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-full py-8 sm:px-6 lg:px-8">
                     <div className="animate-pulse">
                         <div className="h-4 w-40 rounded-sm bg-zinc-200 dark:bg-zinc-800" />
 
@@ -206,7 +206,7 @@ function ViewCourseDocuments() {
     if (error || !course) {
         return (
             <main className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-                <div className="mx-auto max-w-full px-4 py-8 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-full py-8 sm:px-6 lg:px-8">
                     <Link
                         href={`/courses/${courseId}`}
                         className="inline-flex items-center gap-2 text-sm font-semibold text-[#0B1E3D] dark:text-white transition-colors hover:text-orange-500 dark:hover:text-orange-400"
@@ -243,7 +243,7 @@ function ViewCourseDocuments() {
     // ------------------------------------------------------------------
     return (
         <main className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-            <div className="mx-auto max-w-full px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+            <div className="mx-auto max-w-full py-6 sm:px-6 lg:px-8 lg:py-8">
                 {/* Back navigation */}
                 <Link
                     href={`/courses/${course._id}`}

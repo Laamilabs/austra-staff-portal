@@ -401,7 +401,7 @@ function NewTransactionContent() {
     // -----------------------------------------------------------------------
 
     return (
-        <div className="mx-auto w-full max-w-full px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-full py-6 sm:px-6 lg:px-8">
             {/* Header */}
             <div className="mb-6">
                 <Link

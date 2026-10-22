@@ -413,7 +413,7 @@ export default function ApplicationDetailPage() {
                 </div>
             </div>
 
-            <div className="mx-auto max-w-full px-4 py-6 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-full py-6 sm:px-6 lg:px-8">
                 {/* Summary: who, what, and how to reach them */}
                 <section className={`${SURFACE} flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between`}>
                     <div className="flex min-w-0 items-center gap-4">
@@ -915,7 +915,7 @@ function DetailSkeleton() {
     const bar = "animate-pulse rounded-sm bg-zinc-200 dark:bg-white/10";
     return (
         <Shell>
-            <div className="mx-auto max-w-full px-4 py-6 sm:px-6 lg:px-8" aria-busy="true" aria-label="Loading application">
+            <div className="mx-auto max-w-full py-6 sm:px-6 lg:px-8" aria-busy="true" aria-label="Loading application">
                 <div className={`${SURFACE} flex items-center gap-4 p-5`}>
                     <div className={`h-14 w-14 ${bar}`} />
                     <div className="space-y-2">

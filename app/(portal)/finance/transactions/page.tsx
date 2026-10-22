@@ -428,7 +428,7 @@ function TransactionsList() {
     // -----------------------------------------------------------------------
 
     return (
-        <div className="mx-auto w-full min-w-0 max-w-full px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full min-w-0 max-w-full py-6 sm:px-6 lg:px-8">
             <style>{`@keyframes txSlide{0%{transform:translateX(-100%)}100%{transform:translateX(450%)}}`}</style>
 
             {/* Refresh progress, pinned above the page content */}

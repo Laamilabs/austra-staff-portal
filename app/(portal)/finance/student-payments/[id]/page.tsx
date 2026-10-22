@@ -170,7 +170,7 @@ export default function StudentFeeDetailPage() {
     /* -------------------- Render -------------------- */
 
     return (
-        <main className="mx-auto w-full min-w-0 max-w-full px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <main className="mx-auto w-full min-w-0 max-w-full py-6 sm:px-6 sm:py-8 lg:px-8">
             <nav className="mb-3 flex flex-wrap items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
                 <Link href="/finance" className="hover:text-orange-500">
                     Finance

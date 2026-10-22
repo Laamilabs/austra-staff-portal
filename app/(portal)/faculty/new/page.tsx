@@ -183,7 +183,7 @@ export default function CreateFacultyPage() {
         return (
             <RequireRole role="admin">
                 <main className="min-h-full bg-zinc-50 py-8 dark:bg-zinc-950">
-                    <div className="mx-auto max-w-full px-4">
+                    <div className="mx-auto max-w-full">
                         <div className="flex h-64 items-center justify-center rounded-sm border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
                             <div className="flex items-center gap-3 text-zinc-500 dark:text-zinc-400">
                                 <Loader2 className="h-5 w-5 animate-spin text-[#082B66] dark:text-orange-400" />
@@ -199,7 +199,7 @@ export default function CreateFacultyPage() {
     return (
         <RequireRole role="admin">
             <main className="min-h-full bg-zinc-50 pb-12 dark:bg-zinc-950">
-                <div className="mx-auto max-w-full px-4 py-6 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-full py-6 sm:px-6 lg:px-8">
                     {/* Back Link */}
                     <div className="mb-6">
                         <Link

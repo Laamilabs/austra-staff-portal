@@ -582,7 +582,7 @@ export default function NewStudentPaymentPage() {
     // ---------------------------------------------------------
 
     return (
-        <main className="mx-auto w-full min-w-0 max-w-full px-4 py-6 pb-28 sm:px-6 sm:py-8 lg:px-8 lg:pb-8">
+        <main className="mx-auto w-full min-w-0 max-w-full py-6 pb-28 sm:px-6 sm:py-8 lg:px-8 lg:pb-8">
             <style>{`@keyframes assignSlide{0%{transform:translateX(-100%)}100%{transform:translateX(450%)}}`}</style>
 
             <nav className="mb-3 flex flex-wrap gap-x-2 text-xs text-zinc-500 dark:text-zinc-400">

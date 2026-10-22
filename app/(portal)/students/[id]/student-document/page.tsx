@@ -239,7 +239,7 @@ export default function StudentDocumentViewPage() {
   if (error || !document) {
     return (
       <main className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-        <div className="mx-auto max-w-full px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-full py-8 sm:px-6 lg:px-8">
           <Link
             href={backHref}
             className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-500 transition-colors hover:text-[#0B1E3D] dark:text-zinc-400 dark:hover:text-white"
