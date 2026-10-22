@@ -122,8 +122,8 @@ export function IconTile({
         size === "sm"
             ? "h-8 w-8"
             : size === "lg"
-              ? "h-11 w-11"
-              : "h-9 w-9 sm:h-10 sm:w-10";
+                ? "h-11 w-11"
+                : "h-9 w-9 sm:h-10 sm:w-10";
     const px = size === "sm" ? 16 : size === "lg" ? 22 : 20;
     return (
         <span
@@ -330,9 +330,9 @@ export function HeroAvatar({
     onError: () => void;
 }) {
     return (
-        <span className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-orange-400 text-lg font-bold text-[#082B66] ring-2 ring-white/40 sm:h-16 sm:w-16 sm:text-xl">
+        <div className="relative h-full w-full overflow-hidden bg-orange-400 ring-1 ring-inset ring-white/10">
             {loading ? (
-                <span className="h-full w-full animate-pulse bg-white/30" />
+                <div className="h-full w-full animate-pulse bg-white/30" />
             ) : src ? (
                 <img
                     src={src}
@@ -341,9 +341,11 @@ export function HeroAvatar({
                     onError={onError}
                 />
             ) : (
-                initials
+                <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-orange-300 to-orange-500 text-3xl font-bold text-[#082B66] sm:text-4xl lg:text-5xl">
+                    {initials}
+                </span>
             )}
-        </span>
+        </div>
     );
 }
 
@@ -720,11 +722,10 @@ export function ApplicationsSection({
                                         this month
                                         {showGrowth && (
                                             <span
-                                                className={`ml-1.5 inline-flex items-center gap-0.5 font-semibold ${
-                                                    growth >= 0
+                                                className={`ml-1.5 inline-flex items-center gap-0.5 font-semibold ${growth >= 0
                                                         ? "text-emerald-600 dark:text-emerald-400"
                                                         : "text-rose-600 dark:text-rose-400"
-                                                }`}
+                                                    }`}
                                             >
                                                 {growth >= 0 ? (
                                                     <TrendingUp size={11} />
@@ -1154,11 +1155,10 @@ export function FinanceCard({
                             </p>
                             {delta !== null && (
                                 <span
-                                    className={`mt-1.5 inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-xs font-semibold ${
-                                        delta >= 0
+                                    className={`mt-1.5 inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-xs font-semibold ${delta >= 0
                                             ? "bg-orange-400/15 text-orange-700 dark:text-orange-300"
                                             : "bg-rose-500/10 text-rose-700 dark:text-rose-300"
-                                    }`}
+                                        }`}
                                 >
                                     {delta >= 0 ? (
                                         <TrendingUp size={12} />

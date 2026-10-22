@@ -126,7 +126,6 @@ export default function DashboardPage() {
     const displayName = user?.name?.trim() || "Staff Member";
     const displayEmail = user?.email?.trim() || "Staff account";
     const initials = user?.name?.trim()?.charAt(0)?.toUpperCase() || "U";
-    const firstName = displayName.split(/\s+/)[0];
 
     const rawRole = user?.role?.toString()?.trim() || "staff";
     const role =
@@ -140,10 +139,10 @@ export default function DashboardPage() {
     const greeting = !now
         ? "Welcome back"
         : now.getHours() < 12
-          ? "Good morning"
-          : now.getHours() < 17
-            ? "Good afternoon"
-            : "Good evening";
+            ? "Good morning"
+            : now.getHours() < 17
+                ? "Good afternoon"
+                : "Good evening";
 
     // ---- Derived metrics ---------------------------------------------------
 
@@ -154,7 +153,7 @@ export default function DashboardPage() {
         if (!studentStats || studentStats.totalEnrollments <= 0) return null;
         return Math.round(
             (studentStats.activeEnrollments / studentStats.totalEnrollments) *
-                100,
+            100,
         );
     }, [studentStats]);
 
@@ -163,7 +162,7 @@ export default function DashboardPage() {
         return Math.round(
             (studentStats.completedEnrollments /
                 studentStats.totalEnrollments) *
-                100,
+            100,
         );
     }, [studentStats]);
 
@@ -204,18 +203,23 @@ export default function DashboardPage() {
                 {/* ============================================================ */}
                 {/* HERO                                                         */}
                 {/* ============================================================ */}
-                <header className="relative overflow-hidden rounded-sm border border-white/10 bg-[#0A4AA6] dark:bg-[#0B3A80] p-3 text-white shadow-[0_20px_50px_-28px_rgba(8,43,102,0.8)] sm:p-5 lg:p-6">
+                {/* ============================================================ */}
+                {/* HERO                                                         */}
+                {/* ============================================================ */}
+                <header className="relative grid grid-cols-[5.5rem_1fr] overflow-hidden rounded-sm border border-white/10 bg-[#0A4AA6] text-white shadow-[0_20px_50px_-28px_rgba(8,43,102,0.8)] sm:grid-cols-[7rem_1fr] md:grid-cols-[9rem_1fr] dark:bg-[#0B3A80]">
 
-                    <div className="relative z-10 flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">
-                        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
-                            <HeroAvatar
-                                src={profileImage}
-                                name={displayName}
-                                initials={initials}
-                                loading={authLoading}
-                                onError={() => setImageFailed(true)}
-                            />
+                    {/* Avatar column — bleeds top / bottom / left */}
+                    <HeroAvatar
+                        src={profileImage}
+                        name={displayName}
+                        initials={initials}
+                        loading={authLoading}
+                        onError={() => setImageFailed(true)}
+                    />
 
+                    {/* Content column */}
+                    <div className="flex min-w-0 flex-col gap-3 p-3 sm:gap-4 sm:p-5 lg:p-6">
+                        <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">
                             <div className="min-w-0">
                                 <p className="text-xs font-medium text-orange-300">
                                     {greeting}
@@ -238,10 +242,8 @@ export default function DashboardPage() {
                                     </div>
                                 ) : (
                                     <>
-                                        <h1 className="truncate text-xl font-semibold leading-tight tracking-tight sm:text-3xl">
-                                            {isAuthenticated
-                                                ? firstName
-                                                : "Welcome"}
+                                        <h1 className="break-words text-2xl font-semibold leading-tight tracking-tight sm:text-3xl lg:text-4xl">
+                                            {isAuthenticated ? displayName : "Welcome"}
                                         </h1>
                                         <div className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1">
                                             <span className="rounded-sm border border-orange-300/50 bg-orange-400/20 px-2 py-0.5 text-xs font-semibold text-orange-200">
@@ -254,72 +256,70 @@ export default function DashboardPage() {
                                     </>
                                 )}
                             </div>
-                        </div>
 
-                        <div className="flex items-center gap-2 md:justify-end">
-                            <RecordPaymentButton variant="hero" />
-                            <Link
-                                href="/profile"
-                                className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-sm bg-white/10 px-4 text-sm font-semibold text-white ring-1 ring-white/25 backdrop-blur-md transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300 sm:flex-none"
-                            >
-                                <User size={16} aria-hidden />
-                                My profile
-                            </Link>
-                        </div>
-                    </div>
-
-                    {/* The story in one line */}
-                    <div className="relative z-10 mt-3 sm:mt-4">
-                        {storyLoading ? (
-                            <div className="grid grid-cols-2 gap-2 sm:flex">
-                                <div className="h-12 w-full animate-pulse rounded-sm bg-white/10 sm:w-36" />
-                                <div className="h-12 w-full animate-pulse rounded-sm bg-white/10 sm:w-36" />
-                                <div className="h-12 w-full animate-pulse rounded-sm bg-white/10 sm:w-36" />
+                            <div className="flex items-center gap-2 md:justify-end">
+                                <RecordPaymentButton variant="hero" />
+                                <Link
+                                    href="/profile"
+                                    className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-sm bg-white/10 px-4 text-sm font-semibold text-white ring-1 ring-white/25 backdrop-blur-md transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300 sm:flex-none"
+                                >
+                                    <User size={16} aria-hidden />
+                                    My profile
+                                </Link>
                             </div>
-                        ) : (
-                            <ul className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-                                {students !== undefined && (
-                                    <HeroStat
-                                        value={students.toLocaleString()}
-                                        label={
-                                            courses !== undefined
-                                                ? `students · ${courses.toLocaleString()} courses`
-                                                : "students"
-                                        }
-                                    />
-                                )}
-                                {activePct !== null && (
-                                    <HeroStat
-                                        value={`${activePct}%`}
-                                        label="enrollments active"
-                                    />
-                                )}
-                                {financeSummary && (
-                                    <RequireRoleInline
-                                        roles={["admin", "registrar"]}
-                                    >
+                        </div>
+
+                        {/* The story in one line */}
+                        <div>
+                            {storyLoading ? (
+                                <div className="grid grid-cols-2 gap-2 sm:flex">
+                                    <div className="h-12 w-full animate-pulse rounded-sm bg-white/10 sm:w-36" />
+                                    <div className="h-12 w-full animate-pulse rounded-sm bg-white/10 sm:w-36" />
+                                    <div className="h-12 w-full animate-pulse rounded-sm bg-white/10 sm:w-36" />
+                                </div>
+                            ) : (
+                                <ul className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+                                    {students !== undefined && (
                                         <HeroStat
-                                            value={`${collectionRatePct}%`}
-                                            label="fees collected"
+                                            value={students.toLocaleString()}
+                                            label={
+                                                courses !== undefined
+                                                    ? `students · ${courses.toLocaleString()} courses`
+                                                    : "students"
+                                            }
                                         />
-                                    </RequireRoleInline>
-                                )}
-                                {appStats && appsAwaiting > 0 && (
-                                    <HeroStat
-                                        value={appsAwaiting.toLocaleString()}
-                                        label="applications waiting"
-                                    />
-                                )}
-                                {students === undefined &&
-                                    activePct === null &&
-                                    !financeSummary &&
-                                    !appStats && (
-                                        <li className="col-span-2 text-sm text-blue-100">
-                                            Your institution at a glance.
-                                        </li>
                                     )}
-                            </ul>
-                        )}
+                                    {activePct !== null && (
+                                        <HeroStat
+                                            value={`${activePct}%`}
+                                            label="enrollments active"
+                                        />
+                                    )}
+                                    {financeSummary && (
+                                        <RequireRoleInline roles={["admin", "registrar"]}>
+                                            <HeroStat
+                                                value={`${collectionRatePct}%`}
+                                                label="fees collected"
+                                            />
+                                        </RequireRoleInline>
+                                    )}
+                                    {appStats && appsAwaiting > 0 && (
+                                        <HeroStat
+                                            value={appsAwaiting.toLocaleString()}
+                                            label="applications waiting"
+                                        />
+                                    )}
+                                    {students === undefined &&
+                                        activePct === null &&
+                                        !financeSummary &&
+                                        !appStats && (
+                                            <li className="col-span-2 text-sm text-blue-100">
+                                                Your institution at a glance.
+                                            </li>
+                                        )}
+                                </ul>
+                            )}
+                        </div>
                     </div>
                 </header>
 
