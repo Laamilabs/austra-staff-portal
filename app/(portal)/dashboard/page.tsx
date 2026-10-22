@@ -45,6 +45,9 @@ import { clampPct, useFluidScale, type GenderEntry } from "./utils";
 const FONT_STACK =
     '"Segoe UI Variable Text", "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif';
 
+// Deep navy used across the hero and accents
+const NAVY = "#0B1E3D";
+
 export default function DashboardPage() {
     const { user, isLoading: authLoading, isAuthenticated } = useAuth();
 
@@ -282,17 +285,206 @@ export default function DashboardPage() {
             className="relative min-h-dvh overflow-x-clip bg-[#f1f5fb] text-zinc-900 dark:bg-[#0a1020] dark:text-zinc-100"
             style={{ fontFamily: FONT_STACK }}
         >
-            <div className="relative mx-auto w-full max-w-full space-y-3 px-3 py-3 pb-24 sm:space-y-4 sm:px-5 sm:py-5 sm:pb-6 lg:px-6 lg:py-6">
+            {/* Hero-scoped keyframes — mounted with the page, no global CSS needed */}
+            <style>{`
+                @keyframes hero-streak {
+                    0%   { transform: translate3d(-100%, 0, 0) rotate(var(--angle, 0deg)); opacity: 0; }
+                    15%  { opacity: var(--peak, 1); }
+                    85%  { opacity: var(--peak, 1); }
+                    100% { transform: translate3d(350%, 0, 0) rotate(var(--angle, 0deg)); opacity: 0; }
+                }
+                @keyframes hero-glow {
+                    0%, 100% { opacity: 0.55; transform: scale(1); }
+                    50%      { opacity: 0.9;  transform: scale(1.08); }
+                }
+                .hero-streak {
+                    position: absolute;
+                    height: 1px;
+                    border-radius: 9999px;
+                    background: linear-gradient(
+                        90deg,
+                        transparent 0%,
+                        rgba(251, 146, 60, 0.75) 50%,
+                        transparent 100%
+                    );
+                    will-change: transform, opacity;
+                    animation: hero-streak var(--dur, 12s) linear infinite;
+                    animation-delay: var(--delay, 0s);
+                }
+                .hero-glow {
+                    animation: hero-glow 14s ease-in-out infinite;
+                    will-change: transform, opacity;
+                }
+                @media (prefers-reduced-motion: reduce) {
+                    .hero-streak { animation: none; opacity: 0.35; }
+                    .hero-glow   { animation: none; }
+                }
+            `}</style>
+
+            <div className="relative mx-auto w-full max-w-full space-y-3 py-3 pb-24 sm:space-y-4 sm:px-4 sm:py-5 sm:pb-6 lg:px-6 lg:py-6">
                 {/* ============================================================ */}
                 {/* HERO                                                         */}
                 {/* ============================================================ */}
-                <header className="overflow-hidden rounded-sm border border-white/10 bg-[#0A4AA6] text-white shadow-[0_20px_50px_-28px_rgba(8,43,102,0.8)] dark:bg-[#0B3A80]">
+                <header
+                    className="relative overflow-hidden rounded-sm border border-white/10 text-white shadow-[0_20px_50px_-28px_rgba(11,30,61,0.8)]"
+                    style={{ backgroundColor: NAVY }}
+                >
+                    {/* ---- Animated background layer ---- */}
+                    <div
+                        aria-hidden
+                        className="pointer-events-none absolute inset-0 overflow-hidden"
+                    >
+                        {/* Static diagonal pinstripe — depth, no motion */}
+                        <div
+                            className="absolute inset-0 opacity-[0.05]"
+                            style={{
+                                backgroundImage:
+                                    "repeating-linear-gradient(135deg, #ffffff 0 1px, transparent 1px 56px)",
+                            }}
+                        />
 
-                    {/* ---------------- Mobile layout ---------------- */}
-                    <div className="md:hidden">
-                        <div className="flex flex-col items-center gap-3 p-4 sm:gap-4 sm:p-5">
-                            {/* Centered square portrait */}
-                            <div className="aspect-square h-40 w-40 overflow-hidden rounded-2xl shadow-xl shadow-black/30 ring-[3px] ring-orange-300/70 ring-offset-2 ring-offset-[#0A4AA6] sm:h-48 sm:w-48 dark:ring-offset-[#0B3A80]">
+                        {/* Soft radial glows */}
+                        <div
+                            className="hero-glow absolute -right-32 -top-32 h-96 w-96 rounded-full blur-3xl"
+                            style={{ backgroundColor: "rgba(251, 146, 60, 0.20)" }}
+                        />
+                        <div
+                            className="hero-glow absolute -bottom-40 -left-24 h-80 w-80 rounded-full blur-3xl"
+                            style={{
+                                backgroundColor: "rgba(79, 127, 214, 0.15)",
+                                animationDelay: "3s",
+                            }}
+                        />
+
+                        {/* Drifting orange streaks */}
+                        <span
+                            className="hero-streak"
+                            style={{
+                                top: "22%",
+                                left: 0,
+                                width: "30%",
+                                transform: "rotate(-14deg)",
+                                ["--angle" as string]: "-14deg",
+                                ["--dur" as string]: "11s",
+                                ["--delay" as string]: "0s",
+                                ["--peak" as string]: "0.9",
+                            }}
+                        />
+                        <span
+                            className="hero-streak"
+                            style={{
+                                top: "52%",
+                                left: 0,
+                                width: "45%",
+                                transform: "rotate(-9deg)",
+                                ["--angle" as string]: "-9deg",
+                                ["--dur" as string]: "15s",
+                                ["--delay" as string]: "3s",
+                                ["--peak" as string]: "0.55",
+                            }}
+                        />
+                        <span
+                            className="hero-streak"
+                            style={{
+                                top: "82%",
+                                left: 0,
+                                width: "25%",
+                                transform: "rotate(-20deg)",
+                                ["--angle" as string]: "-20deg",
+                                ["--dur" as string]: "9s",
+                                ["--delay" as string]: "6s",
+                                ["--peak" as string]: "0.7",
+                            }}
+                        />
+                    </div>
+
+                    {/* ---- Content layer ---- */}
+                    <div className="relative z-10">
+                        {/* ---------------- Mobile layout ---------------- */}
+                        <div className="md:hidden">
+                            <div className="flex flex-col items-center gap-3 p-4 sm:gap-4 sm:p-5">
+                                {/* Centered square portrait */}
+                                <div className="aspect-square h-40 w-40 overflow-hidden rounded-sm shadow-xl shadow-black/40 ring-[3px] ring-orange-300/70 ring-offset-2 ring-offset-[#0B1E3D] sm:h-48 sm:w-48">
+                                    <HeroAvatar
+                                        src={profileImage}
+                                        name={displayName}
+                                        initials={initials}
+                                        loading={authLoading}
+                                        onError={() => setImageFailed(true)}
+                                    />
+                                </div>
+
+                                {/* Centered identity */}
+                                {!authLoading ? (
+                                    <div className="text-center">
+                                        <p className="text-xs font-medium text-orange-300">
+                                            {greeting}
+                                            {now && (
+                                                <span className="text-blue-200">
+                                                    {" · "}
+                                                    {now.toLocaleDateString(
+                                                        undefined,
+                                                        {
+                                                            weekday: "long",
+                                                            month: "long",
+                                                            day: "numeric",
+                                                        },
+                                                    )}
+                                                </span>
+                                            )}
+                                        </p>
+                                        <h1 className="mt-0.5 break-words text-2xl font-semibold leading-tight tracking-tight">
+                                            {isAuthenticated
+                                                ? displayName
+                                                : "Welcome"}
+                                        </h1>
+                                        <div className="mt-1.5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1">
+                                            <span className="rounded-sm border border-orange-300/50 bg-orange-400/20 px-2 py-0.5 text-xs font-semibold text-orange-200">
+                                                {role}
+                                            </span>
+                                            <span className="max-w-full truncate text-xs text-blue-100">
+                                                {displayEmail}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="flex w-full flex-col items-center space-y-2">
+                                        <div className="h-3 w-32 animate-pulse rounded-sm bg-white/15" />
+                                        <div className="h-7 w-44 animate-pulse rounded-sm bg-white/15" />
+                                        <div className="h-4 w-48 animate-pulse rounded-sm bg-white/10" />
+                                    </div>
+                                )}
+
+                                {/* Actions */}
+                                <div className="flex w-full items-stretch gap-2">
+                                    <RequireRoleInline
+                                        roles={["admin", "registrar"]}
+                                    >
+                                        <Link
+                                            href="/finance/transactions/new"
+                                            className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-sm bg-orange-400 px-3 text-sm font-semibold text-[#0B1E3D] shadow-[0_6px_16px_-8px_rgba(251,146,60,0.9)] ring-1 ring-orange-200/70 transition hover:bg-orange-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                                        >
+                                            <Banknote size={16} aria-hidden />
+                                            Record payment
+                                        </Link>
+                                    </RequireRoleInline>
+                                    <Link
+                                        href="/profile"
+                                        className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-sm bg-white/10 px-3 text-sm font-semibold text-white ring-1 ring-white/25 backdrop-blur-md transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300"
+                                    >
+                                        <User size={16} aria-hidden />
+                                        My profile
+                                    </Link>
+                                </div>
+
+                                {/* Stats */}
+                                <div className="w-full">{statsContent}</div>
+                            </div>
+                        </div>
+
+                        {/* ---------------- Desktop layout ---------------- */}
+                        <div className="hidden md:grid md:grid-cols-[9rem_1fr]">
+                            <div className="h-full w-full overflow-hidden">
                                 <HeroAvatar
                                     src={profileImage}
                                     name={displayName}
@@ -301,101 +493,22 @@ export default function DashboardPage() {
                                     onError={() => setImageFailed(true)}
                                 />
                             </div>
-
-                            {/* Centered identity */}
-                            {!authLoading ? (
-                                <div className="text-center">
-                                    <p className="text-xs font-medium text-orange-300">
-                                        {greeting}
-                                        {now && (
-                                            <span className="text-blue-200">
-                                                {" · "}
-                                                {now.toLocaleDateString(
-                                                    undefined,
-                                                    {
-                                                        weekday: "long",
-                                                        month: "long",
-                                                        day: "numeric",
-                                                    },
-                                                )}
-                                            </span>
-                                        )}
-                                    </p>
-                                    <h1 className="mt-0.5 break-words text-2xl font-semibold leading-tight tracking-tight">
-                                        {isAuthenticated
-                                            ? displayName
-                                            : "Welcome"}
-                                    </h1>
-                                    <div className="mt-1.5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1">
-                                        <span className="rounded-sm border border-orange-300/50 bg-orange-400/20 px-2 py-0.5 text-xs font-semibold text-orange-200">
-                                            {role}
-                                        </span>
-                                        <span className="max-w-full truncate text-xs text-blue-100">
-                                            {displayEmail}
-                                        </span>
+                            <div className="flex min-w-0 flex-col gap-4 p-6">
+                                <div className="flex items-start justify-between gap-4">
+                                    {metaContent}
+                                    <div className="flex shrink-0 items-center gap-2">
+                                        <RecordPaymentButton variant="hero" />
+                                        <Link
+                                            href="/profile"
+                                            className="inline-flex h-10 items-center justify-center gap-2 rounded-sm bg-white/10 px-4 text-sm font-semibold text-white ring-1 ring-white/25 backdrop-blur-md transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300"
+                                        >
+                                            <User size={16} aria-hidden />
+                                            My profile
+                                        </Link>
                                     </div>
                                 </div>
-                            ) : (
-                                <div className="flex w-full flex-col items-center space-y-2">
-                                    <div className="h-3 w-32 animate-pulse rounded-sm bg-white/15" />
-                                    <div className="h-7 w-44 animate-pulse rounded-sm bg-white/15" />
-                                    <div className="h-4 w-48 animate-pulse rounded-sm bg-white/10" />
-                                </div>
-                            )}
-
-                            {/* Actions */}
-                            <div className="flex w-full items-stretch gap-2">
-                                <RequireRoleInline
-                                    roles={["admin", "registrar"]}
-                                >
-                                    <Link
-                                        href="/finance/transactions/new"
-                                        className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-sm bg-orange-400 px-3 text-sm font-semibold text-[#082B66] shadow-[0_6px_16px_-8px_rgba(251,146,60,0.9)] ring-1 ring-orange-200/70 transition hover:bg-orange-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-                                    >
-                                        <Banknote size={16} aria-hidden />
-                                        Record payment
-                                    </Link>
-                                </RequireRoleInline>
-                                <Link
-                                    href="/profile"
-                                    className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-sm bg-white/10 px-3 text-sm font-semibold text-white ring-1 ring-white/25 backdrop-blur-md transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300"
-                                >
-                                    <User size={16} aria-hidden />
-                                    My profile
-                                </Link>
+                                {statsContent}
                             </div>
-
-                            {/* Stats */}
-                            <div className="w-full">{statsContent}</div>
-                        </div>
-                    </div>
-
-                    {/* ---------------- Desktop layout ---------------- */}
-                    <div className="hidden md:grid md:grid-cols-[9rem_1fr]">
-                        <div className="h-full w-full overflow-hidden">
-                            <HeroAvatar
-                                src={profileImage}
-                                name={displayName}
-                                initials={initials}
-                                loading={authLoading}
-                                onError={() => setImageFailed(true)}
-                            />
-                        </div>
-                        <div className="flex min-w-0 flex-col gap-4 p-6">
-                            <div className="flex items-start justify-between gap-4">
-                                {metaContent}
-                                <div className="flex shrink-0 items-center gap-2">
-                                    <RecordPaymentButton variant="hero" />
-                                    <Link
-                                        href="/profile"
-                                        className="inline-flex h-10 items-center justify-center gap-2 rounded-sm bg-white/10 px-4 text-sm font-semibold text-white ring-1 ring-white/25 backdrop-blur-md transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300"
-                                    >
-                                        <User size={16} aria-hidden />
-                                        My profile
-                                    </Link>
-                                </div>
-                            </div>
-                            {statsContent}
                         </div>
                     </div>
                 </header>
