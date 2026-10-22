@@ -631,6 +631,11 @@ export default function SelectStudent({
                             const admissionNumbers =
                                 getAdmissionNumbers(student);
 
+                            const admissionLabel =
+                                admissionNumbers.length > 1
+                                    ? `${admissionNumbers.length} adm.`
+                                    : admissionNumbers[0];
+
                             return (
                                 <div
                                     key={student._id}
@@ -664,21 +669,37 @@ export default function SelectStudent({
                                         <UserRound className="h-4 w-4" />
                                     </span>
 
+                                    {/* Name + subtitle (admission + email) */}
                                     <span className="min-w-0 flex-1">
-                                        <span className="block truncate font-medium">
+                                        <span className="line-clamp-2 font-medium leading-snug">
                                             {name || "Unnamed student"}
                                         </span>
 
-                                        <span className="block truncate text-[11px] text-zinc-500 dark:text-zinc-400">
-                                            {email ||
-                                                student.identification?.idNumber ||
-                                                "No email or ID available"}
+                                        <span className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400">
+                                            {/* Mobile-only admission chip, in subtitle */}
+                                            {admissionNumbers.length > 0 && (
+                                                <span
+                                                    className={`sm:hidden ${CODE_CHIP}`}
+                                                    title={admissionNumbers.join(
+                                                        ", ",
+                                                    )}
+                                                >
+                                                    {admissionLabel}
+                                                </span>
+                                            )}
+                                            <span className="min-w-0 flex-1 truncate">
+                                                {email ||
+                                                    student.identification
+                                                        ?.idNumber ||
+                                                    "No email or ID"}
+                                            </span>
                                         </span>
                                     </span>
 
+                                    {/* Desktop-only admission chip, right side */}
                                     {admissionNumbers.length > 0 && (
                                         <span
-                                            className={CODE_CHIP}
+                                            className={`hidden shrink-0 sm:inline ${CODE_CHIP}`}
                                             title={admissionNumbers.join(", ")}
                                         >
                                             {admissionNumbers.length > 1
