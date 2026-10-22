@@ -46,7 +46,7 @@ const FOCUS_RING =
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400";
 
 const CODE_CHIP =
-    "shrink-0 rounded-sm bg-[#0B1E3D]/5 px-1.5 py-0.5 font-mono text-[11px] font-medium text-[#0B1E3D] ring-1 ring-inset ring-[#0B1E3D]/10 dark:bg-orange-400/10 dark:text-orange-300 dark:ring-orange-400/25";
+    "inline-flex max-w-full items-center rounded-sm bg-[#0B1E3D]/5 px-1.5 py-0.5 font-mono text-[11px] font-medium text-[#0B1E3D] ring-1 ring-inset ring-[#0B1E3D]/10 dark:bg-orange-400/10 dark:text-orange-300 dark:ring-orange-400/25";
 
 const STATUS_LABEL: Record<TransactionStatus, string> = {
     PENDING: "Pending",
@@ -403,7 +403,7 @@ export default function TransactionDetailPage() {
 
     if (loading) {
         return (
-            <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+            <div className="mx-auto w-full max-w-full px-4 py-6 sm:px-6 lg:px-8">
                 <div className="flex flex-col items-center justify-center gap-3 rounded-sm border border-zinc-200 bg-white py-24 dark:border-white/10 dark:bg-[#0B1E3D]">
                     <Loader2 className="h-6 w-6 animate-spin text-orange-500 dark:text-orange-400" />
                     <span className="text-sm text-zinc-500 dark:text-zinc-400">
@@ -416,7 +416,7 @@ export default function TransactionDetailPage() {
 
     if (error || !tx) {
         return (
-            <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+            <div className="mx-auto w-full max-w-full px-4 py-6 sm:px-6 lg:px-8">
                 <Link
                     href="/finance/transactions"
                     className={`mb-4 inline-flex items-center gap-1.5 text-sm text-zinc-500 transition-colors hover:text-[#0B1E3D] dark:text-zinc-400 dark:hover:text-white ${FOCUS_RING}`}
@@ -425,22 +425,22 @@ export default function TransactionDetailPage() {
                     Back to transactions
                 </Link>
 
-                <div className="flex flex-col items-center justify-center gap-3 rounded-sm border border-zinc-200 bg-white py-20 text-center dark:border-white/10 dark:bg-[#0B1E3D]">
+                <div className="flex flex-col items-center justify-center gap-3 rounded-sm border border-zinc-200 bg-white px-4 py-16 text-center dark:border-white/10 dark:bg-[#0B1E3D] sm:py-20">
                     <AlertCircle className="h-8 w-8 text-rose-500" />
-                    <p className="text-sm font-medium text-[#0B1E3D] dark:text-white">
+                    <p className="max-w-md text-sm font-medium text-[#0B1E3D] dark:text-white">
                         {error ?? "Transaction not found"}
                     </p>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-col gap-2 sm:flex-row">
                         <button
                             type="button"
                             onClick={load}
-                            className={`inline-flex h-9 items-center gap-2 rounded-sm border border-zinc-200 px-3 text-sm font-medium text-[#0B1E3D] hover:bg-zinc-50 dark:border-white/10 dark:text-white dark:hover:bg-white/5 ${FOCUS_RING}`}
+                            className={`inline-flex h-9 items-center justify-center gap-2 rounded-sm border border-zinc-200 px-3 text-sm font-medium text-[#0B1E3D] hover:bg-zinc-50 dark:border-white/10 dark:text-white dark:hover:bg-white/5 ${FOCUS_RING}`}
                         >
                             Try again
                         </button>
                         <Link
                             href="/finance/transactions"
-                            className={`inline-flex h-9 items-center gap-2 rounded-sm bg-orange-500 px-3 text-sm font-medium text-white hover:bg-orange-600 ${FOCUS_RING}`}
+                            className={`inline-flex h-9 items-center justify-center gap-2 rounded-sm bg-orange-500 px-3 text-sm font-medium text-white hover:bg-orange-600 ${FOCUS_RING}`}
                         >
                             Back to list
                         </Link>
@@ -452,79 +452,95 @@ export default function TransactionDetailPage() {
 
     const StatusIcon = STATUS_ICON[tx.status];
     const isConfirmed = tx.status === "CONFIRMED";
+    const isReversed = tx.status === "REVERSED";
 
     return (
-        <div className="mx-auto w-full max-w-full py-6 sm:px-6 lg:px-8">
-            {/* Header */}
-            <div className="mb-6">
-                <Link
-                    href="/finance/transactions"
-                    className={`mb-3 inline-flex items-center gap-1.5 text-sm text-zinc-500 transition-colors hover:text-[#0B1E3D] dark:text-zinc-400 dark:hover:text-white ${FOCUS_RING}`}
-                >
-                    <ArrowLeft className="h-4 w-4" />
-                    Back to transactions
-                </Link>
+        <div className="mx-auto w-full max-w-full px-4 py-6 sm:px-6 lg:px-8">
+            {/* Back link */}
+            <Link
+                href="/finance/transactions"
+                className={`mb-4 inline-flex items-center gap-1.5 text-sm text-zinc-500 transition-colors hover:text-[#0B1E3D] dark:text-zinc-400 dark:hover:text-white ${FOCUS_RING}`}
+            >
+                <ArrowLeft className="h-4 w-4" />
+                Back to transactions
+            </Link>
 
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="flex items-start gap-3">
-                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-orange-400/15 text-orange-500 dark:bg-orange-400/10 dark:text-orange-300">
-                            <Receipt className="h-5 w-5" />
-                        </span>
-                        <div className="min-w-0">
-                            <h1 className="text-lg font-semibold text-[#0B1E3D] dark:text-white">
-                                Transaction details
-                            </h1>
-                            <div className="mt-1 flex flex-wrap items-center gap-2">
-                                <span
-                                    className={`inline-flex items-center gap-1.5 rounded-sm px-2 py-0.5 text-[11px] font-medium ring-1 ring-inset ${STATUS_STYLE[tx.status]}`}
-                                >
-                                    <StatusIcon className="h-3 w-3" />
-                                    {STATUS_LABEL[tx.status]}
-                                </span>
-                                <span
-                                    className={`inline-flex items-center gap-1.5 rounded-sm px-2 py-0.5 text-[11px] font-medium ring-1 ring-inset ${METHOD_STYLE[tx.paymentMethod]}`}
-                                >
-                                    {METHOD_LABEL[tx.paymentMethod]}
-                                </span>
-                                <span className="font-mono text-[11px] text-zinc-400 dark:text-zinc-500">
-                                    ID: {tx._id.slice(-8)}
-                                </span>
-                            </div>
+            {/* ============================================================ */}
+            {/* Header                                                       */}
+            {/* ============================================================ */}
+            <div className="mb-4 flex flex-col gap-4 sm:mb-6 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex items-start gap-3">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-orange-400/15 text-orange-500 dark:bg-orange-400/10 dark:text-orange-300">
+                        <Receipt className="h-5 w-5" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                        <h1 className="text-lg font-semibold leading-tight text-[#0B1E3D] dark:text-white sm:text-xl">
+                            Transaction details
+                        </h1>
+                        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                            <span
+                                className={`inline-flex items-center gap-1.5 rounded-sm px-2 py-0.5 text-[11px] font-medium ring-1 ring-inset ${STATUS_STYLE[tx.status]}`}
+                            >
+                                <StatusIcon className="h-3 w-3" />
+                                {STATUS_LABEL[tx.status]}
+                            </span>
+                            <span
+                                className={`inline-flex items-center rounded-sm px-2 py-0.5 text-[11px] font-medium ring-1 ring-inset ${METHOD_STYLE[tx.paymentMethod]}`}
+                            >
+                                {METHOD_LABEL[tx.paymentMethod]}
+                            </span>
+                            <span className="font-mono text-[11px] text-zinc-400 dark:text-zinc-500">
+                                ID: {tx._id.slice(-8)}
+                            </span>
                         </div>
                     </div>
-
-                    {isConfirmed && (
-                        <button
-                            type="button"
-                            onClick={() => setShowReverseConfirm(true)}
-                            className={`inline-flex h-10 shrink-0 items-center gap-2 rounded-sm border border-zinc-200 px-3 text-sm font-medium text-zinc-600 transition-colors hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700 dark:border-white/10 dark:text-zinc-300 dark:hover:border-rose-400/30 dark:hover:bg-rose-400/10 dark:hover:text-rose-300 ${FOCUS_RING}`}
-                        >
-                            <Undo2 className="h-4 w-4" />
-                            Reverse payment
-                        </button>
-                    )}
                 </div>
+
+                {isConfirmed && (
+                    <button
+                        type="button"
+                        onClick={() => setShowReverseConfirm(true)}
+                        className={`inline-flex h-10 w-full shrink-0 items-center justify-center gap-2 rounded-sm border border-zinc-200 px-3 text-sm font-medium text-zinc-600 transition-colors hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700 sm:w-auto dark:border-white/10 dark:text-zinc-300 dark:hover:border-rose-400/30 dark:hover:bg-rose-400/10 dark:hover:text-rose-300 ${FOCUS_RING}`}
+                    >
+                        <Undo2 className="h-4 w-4" />
+                        Reverse payment
+                    </button>
+                )}
             </div>
 
-            {/* Amount hero */}
-            <div className="mb-6 rounded-sm border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-[#0B1E3D]">
+            {/* ============================================================ */}
+            {/* Amount hero                                                  */}
+            {/* ============================================================ */}
+            <div
+                className={`mb-4 rounded-sm border bg-white p-4 sm:mb-6 sm:p-5 dark:bg-[#0B1E3D] ${
+                    isReversed
+                        ? "border-rose-200 dark:border-rose-400/25"
+                        : "border-zinc-200 dark:border-white/10"
+                }`}
+            >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                    <div>
-                        <p className="text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                    <div className="min-w-0">
+                        <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400 sm:text-[11px]">
                             Amount
                         </p>
-                        <p className="mt-1 text-2xl font-semibold tabular-nums text-[#0B1E3D] dark:text-white">
+                        <p
+                            className={`mt-1 break-words text-2xl font-semibold tabular-nums sm:text-3xl ${
+                                isReversed
+                                    ? "text-zinc-400 line-through dark:text-zinc-500"
+                                    : "text-[#0B1E3D] dark:text-white"
+                            }`}
+                        >
                             {formatMoney(tx.amount, tx.currency)}
                         </p>
                     </div>
 
-                    <div className="text-right">
-                        <p className="text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                    <div className="min-w-0 sm:max-w-[60%] sm:text-right">
+                        <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400 sm:text-[11px]">
                             {derived.dateOnly
                                 ? "Transaction date"
                                 : "Transaction date & time"}
                         </p>
-                        <p className="mt-1 text-sm font-medium tabular-nums text-[#0B1E3D] dark:text-white">
+                        <p className="mt-1 break-words text-sm font-medium tabular-nums text-[#0B1E3D] dark:text-white">
                             {derived.dateOnly
                                 ? formatDate(tx.transactionDate)
                                 : formatDateTime(tx.transactionDate)}
@@ -538,15 +554,17 @@ export default function TransactionDetailPage() {
                 </div>
             </div>
 
-            {/* Detail grid */}
-            <div className="grid gap-4 lg:grid-cols-2">
+            {/* ============================================================ */}
+            {/* Detail grid                                                  */}
+            {/* ============================================================ */}
+            <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
                 {/* Student */}
                 <Section
                     title="Student"
                     icon={<UserRound className="h-4 w-4" />}
                 >
                     {derived.studentName ? (
-                        <dl className="space-y-2.5">
+                        <dl className="divide-y divide-zinc-100 dark:divide-white/[0.06]">
                             <Field
                                 label="Full name"
                                 value={derived.studentName}
@@ -603,7 +621,7 @@ export default function TransactionDetailPage() {
                     icon={<BookOpen className="h-4 w-4" />}
                 >
                     {derived.courseName || derived.courseCode ? (
-                        <dl className="space-y-2.5">
+                        <dl className="divide-y divide-zinc-100 dark:divide-white/[0.06]">
                             {derived.courseName && (
                                 <Field
                                     label="Name"
@@ -646,7 +664,7 @@ export default function TransactionDetailPage() {
                     title="Payment"
                     icon={<Wallet className="h-4 w-4" />}
                 >
-                    <dl className="space-y-2.5">
+                    <dl className="divide-y divide-zinc-100 dark:divide-white/[0.06]">
                         <Field
                             label="Method"
                             value={METHOD_LABEL[tx.paymentMethod]}
@@ -683,7 +701,7 @@ export default function TransactionDetailPage() {
                     title="Audit"
                     icon={<BadgeCheck className="h-4 w-4" />}
                 >
-                    <dl className="space-y-2.5">
+                    <dl className="divide-y divide-zinc-100 dark:divide-white/[0.06]">
                         <Field
                             label="Confirmed by"
                             icon={<UserRound className="h-3.5 w-3.5" />}
@@ -696,7 +714,7 @@ export default function TransactionDetailPage() {
                         />
                         {derived.confirmedByEmail &&
                             derived.confirmedByEmail !==
-                            derived.confirmedByName && (
+                                derived.confirmedByName && (
                                 <Field
                                     label="Email"
                                     icon={<Mail className="h-3.5 w-3.5" />}
@@ -727,8 +745,10 @@ export default function TransactionDetailPage() {
                 </Section>
             </div>
 
-            {/* Notes editor */}
-            <div className="mt-4 rounded-sm border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-[#0B1E3D]">
+            {/* ============================================================ */}
+            {/* Notes editor                                                 */}
+            {/* ============================================================ */}
+            <div className="mt-3 rounded-sm border border-zinc-200 bg-white p-4 sm:mt-4 sm:p-5 dark:border-white/10 dark:bg-[#0B1E3D]">
                 <div className="mb-3 flex items-center gap-2">
                     <span className="flex h-7 w-7 items-center justify-center rounded-sm bg-[#0B1E3D]/5 text-[#0B1E3D] dark:bg-white/10 dark:text-orange-300">
                         <FileText className="h-3.5 w-3.5" />
@@ -736,7 +756,7 @@ export default function TransactionDetailPage() {
                     <h2 className="text-sm font-semibold text-[#0B1E3D] dark:text-white">
                         Notes
                     </h2>
-                    <span className="text-[11px] text-zinc-400 dark:text-zinc-500">
+                    <span className="hidden text-[11px] text-zinc-400 sm:inline dark:text-zinc-500">
                         (only field that can be edited)
                     </span>
                 </div>
@@ -823,8 +843,8 @@ interface SectionProps {
 
 function Section({ title, icon, children }: SectionProps) {
     return (
-        <div className="rounded-sm border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-[#0B1E3D]">
-            <div className="mb-3 flex items-center gap-2">
+        <div className="rounded-sm border border-zinc-200 bg-white p-4 sm:p-5 dark:border-white/10 dark:bg-[#0B1E3D]">
+            <div className="mb-2.5 flex items-center gap-2 sm:mb-3">
                 <span className="flex h-7 w-7 items-center justify-center rounded-sm bg-[#0B1E3D]/5 text-[#0B1E3D] dark:bg-white/10 dark:text-orange-300">
                     {icon}
                 </span>
@@ -845,18 +865,18 @@ interface FieldProps {
 
 function Field({ label, value, icon }: FieldProps) {
     return (
-        <div className="flex items-start justify-between gap-3">
-            <span className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+        <div className="flex flex-col gap-0.5 py-2 sm:flex-row sm:items-baseline sm:justify-between sm:gap-3 sm:py-1.5">
+            <dt className="flex shrink-0 items-center gap-1.5 text-[10px] font-medium uppercase leading-tight tracking-[0.1em] text-zinc-500 dark:text-zinc-400 sm:text-xs sm:font-normal sm:normal-case sm:tracking-normal">
                 {icon && (
                     <span className="text-zinc-400 dark:text-zinc-500">
                         {icon}
                     </span>
                 )}
                 {label}
-            </span>
-            <span className="max-w-[60%] truncate text-right text-sm font-medium text-[#0B1E3D] dark:text-white">
+            </dt>
+            <dd className="min-w-0 break-words text-sm font-medium text-[#0B1E3D] dark:text-white sm:max-w-[65%] sm:truncate sm:text-right">
                 {value}
-            </span>
+            </dd>
         </div>
     );
 }
@@ -864,9 +884,7 @@ function Field({ label, value, icon }: FieldProps) {
 function FallbackRef({ id, message }: { id: string; message: string }) {
     return (
         <div className="space-y-2">
-            {id && (
-                <span className={CODE_CHIP}>ref: {id.slice(-8)}</span>
-            )}
+            {id && <span className={CODE_CHIP}>ref: {id.slice(-8)}</span>}
             <p className="flex items-start gap-2 text-xs text-amber-700 dark:text-amber-300">
                 <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                 <span>{message}</span>
@@ -898,7 +916,7 @@ function ReverseModal({
 }: ReverseModalProps) {
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 backdrop-blur-sm sm:items-center"
             role="dialog"
             aria-modal="true"
             aria-labelledby="reverse-modal-title"
@@ -906,7 +924,7 @@ function ReverseModal({
                 if (e.target === e.currentTarget && !busy) onCancel();
             }}
         >
-            <div className="w-full max-w-md rounded-sm border border-zinc-200 bg-white p-5 shadow-xl dark:border-white/10 dark:bg-[#0B1E3D]">
+            <div className="w-full max-w-md rounded-sm border border-zinc-200 bg-white p-4 shadow-xl sm:p-5 dark:border-white/10 dark:bg-[#0B1E3D]">
                 <div className="mb-3 flex items-start gap-3">
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-rose-50 text-rose-600 ring-1 ring-inset ring-rose-200 dark:bg-rose-400/10 dark:text-rose-300 dark:ring-rose-400/25">
                         <Undo2 className="h-4 w-4" />
@@ -943,9 +961,7 @@ function ReverseModal({
                             value={admissionNumber}
                         />
                     )}
-                    {courseName && (
-                        <Row label="Course" value={courseName} />
-                    )}
+                    {courseName && <Row label="Course" value={courseName} />}
                     <Row
                         label="Amount"
                         value={formatMoney(
@@ -969,12 +985,12 @@ function ReverseModal({
                     )}
                 </div>
 
-                <div className="flex items-center justify-end gap-2">
+                <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                     <button
                         type="button"
                         onClick={onCancel}
                         disabled={busy}
-                        className={`inline-flex h-9 items-center rounded-sm border border-zinc-200 px-3 text-sm font-medium text-[#0B1E3D] hover:bg-zinc-50 disabled:opacity-50 dark:border-white/10 dark:text-white dark:hover:bg-white/5 ${FOCUS_RING}`}
+                        className={`inline-flex h-10 w-full items-center justify-center rounded-sm border border-zinc-200 px-3 text-sm font-medium text-[#0B1E3D] hover:bg-zinc-50 disabled:opacity-50 sm:w-auto dark:border-white/10 dark:text-white dark:hover:bg-white/5 ${FOCUS_RING}`}
                     >
                         Cancel
                     </button>
@@ -982,7 +998,7 @@ function ReverseModal({
                         type="button"
                         onClick={onConfirm}
                         disabled={busy}
-                        className={`inline-flex h-9 items-center gap-2 rounded-sm bg-rose-600 px-3 text-sm font-medium text-white hover:bg-rose-700 disabled:opacity-60 ${FOCUS_RING}`}
+                        className={`inline-flex h-10 w-full items-center justify-center gap-2 rounded-sm bg-rose-600 px-3 text-sm font-medium text-white hover:bg-rose-700 disabled:opacity-60 sm:w-auto ${FOCUS_RING}`}
                     >
                         {busy ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -1000,10 +1016,10 @@ function ReverseModal({
 function Row({ label, value }: { label: string; value: string }) {
     return (
         <div className="flex items-center justify-between gap-3">
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">
+            <span className="shrink-0 text-xs text-zinc-500 dark:text-zinc-400">
                 {label}
             </span>
-            <span className="truncate text-sm font-medium text-[#0B1E3D] dark:text-white">
+            <span className="min-w-0 truncate text-right text-sm font-medium text-[#0B1E3D] dark:text-white">
                 {value}
             </span>
         </div>
