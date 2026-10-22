@@ -12,6 +12,7 @@ import Link from "next/link";
 import {
     AlertCircle,
     CheckCircle2,
+    ChevronDown,
     Clock,
     LayoutDashboard,
     Loader2,
@@ -19,6 +20,7 @@ import {
     Receipt,
     RefreshCw,
     Search,
+    SlidersHorizontal,
     TrendingUp,
     Undo2,
     Users,
@@ -285,6 +287,9 @@ function TransactionsList() {
     const [sort, setSort] = useState<SortKey>("newest");
     const [limitState, setLimitState] = useState({ sig: "", n: PAGE });
 
+    // Mobile-only: filters panel collapsed by default
+    const [filtersOpen, setFiltersOpen] = useState(false);
+
     const searchRef = useRef<HTMLInputElement>(null);
 
     const load = useCallback(async () => {
@@ -413,6 +418,12 @@ function TransactionsList() {
     }, [transactions]);
 
     const hasFilters = q !== "" || statusFilter !== "ALL" || methodFilter !== "ALL";
+
+    // Active-filter count for the mobile toggle badge. Sort is a reorder,
+    // not a filter, so it's intentionally excluded.
+    const activeFilterCount =
+        (statusFilter !== "ALL" ? 1 : 0) +
+        (methodFilter !== "ALL" ? 1 : 0);
 
     const clearFilters = () => {
         setSearch("");
@@ -545,8 +556,8 @@ function TransactionsList() {
 
             {showList && (
                 <>
-                    {/* Totals */}
-                    <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                    {/* Totals — minimalist on mobile */}
+                    <div className="mt-6 grid grid-cols-3 gap-2 sm:gap-3">
                         <Stat
                             icon={<TrendingUp className="h-4 w-4" />}
                             label="Collected"
@@ -571,7 +582,8 @@ function TransactionsList() {
                     </div>
 
                     {/* Search and filters */}
-                    <div className={`${CARD} mt-5 space-y-3 p-3`}>
+                    <div className={`${CARD} mt-5 p-3`}>
+                        {/* Search + refresh — always visible */}
                         <div className="flex flex-col gap-2 sm:flex-row">
                             <div className="relative min-w-0 flex-1">
                                 <Search
@@ -616,70 +628,127 @@ function TransactionsList() {
                             </button>
                         </div>
 
-                        <div className="grid gap-3 lg:grid-cols-[auto_1fr_1fr] lg:items-end">
-                            <div
-                                role="group"
-                                aria-label="Status"
-                                className="grid grid-cols-4 rounded-sm border border-zinc-200 bg-zinc-100 p-0.5 lg:flex dark:border-white/10 dark:bg-white/5"
-                            >
-                                {STATUS_TABS.map((t) => {
-                                    const active = statusFilter === t.key;
-                                    return (
-                                        <button
-                                            key={t.key}
-                                            type="button"
-                                            aria-pressed={active}
-                                            onClick={() => setStatusFilter(t.key)}
-                                            className={`relative flex flex-col items-center justify-center rounded-sm px-2 py-1.5 text-sm transition-colors lg:flex-row lg:px-3 ${FOCUS} ${active
-                                                ? "bg-white font-semibold text-[#0B1E3D] shadow-sm after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-sm after:bg-orange-400 dark:bg-white/15 dark:text-white"
-                                                : "text-zinc-600 hover:bg-white/60 dark:text-zinc-300 dark:hover:bg-white/10"
-                                                }`}
-                                        >
-                                            <span>{t.label}</span>
-                                            <span className="text-xs font-normal tabular-nums text-zinc-400 lg:ml-1.5">
-                                                {statusCounts[t.key]}
-                                            </span>
-                                        </button>
-                                    );
-                                })}
+                        {/* Mobile-only filter toggle */}
+                        <button
+                            type="button"
+                            onClick={() => setFiltersOpen((v) => !v)}
+                            aria-expanded={filtersOpen}
+                            aria-controls="tx-filters"
+                            className={`mt-3 flex h-10 w-full items-center justify-between gap-2 rounded-sm border bg-white px-3 text-sm font-medium transition-colors sm:hidden dark:bg-[#0B1E3D] ${FOCUS} ${
+                                activeFilterCount > 0
+                                    ? "border-orange-400/60 text-[#0B1E3D] hover:bg-orange-50/60 dark:text-white dark:hover:bg-orange-400/10"
+                                    : "border-zinc-200 text-[#0B1E3D] hover:bg-zinc-50 dark:border-white/10 dark:text-white dark:hover:bg-white/5"
+                            }`}
+                        >
+                            <span className="flex items-center gap-2">
+                                <SlidersHorizontal
+                                    size={15}
+                                    className={
+                                        activeFilterCount > 0
+                                            ? "text-orange-500"
+                                            : "text-zinc-500 dark:text-zinc-400"
+                                    }
+                                    aria-hidden
+                                />
+                                Filters
+                                {activeFilterCount > 0 && (
+                                    <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-400 px-1.5 text-[10px] font-bold tabular-nums text-[#0B1E3D]">
+                                        {activeFilterCount}
+                                    </span>
+                                )}
+                            </span>
+                            <ChevronDown
+                                size={15}
+                                aria-hidden
+                                className={`shrink-0 text-zinc-400 transition-transform duration-200 ${
+                                    filtersOpen ? "rotate-180" : ""
+                                }`}
+                            />
+                        </button>
+
+                        {/* Collapsible filters (mobile) / always visible (sm+) */}
+                        <div
+                            id="tx-filters"
+                            className={`grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none ${
+                                filtersOpen
+                                    ? "grid-rows-[1fr]"
+                                    : "grid-rows-[0fr] sm:grid-rows-[1fr]"
+                            }`}
+                        >
+                            <div className="overflow-hidden">
+                                <div className="mt-3 grid gap-3 sm:mt-4 lg:grid-cols-[auto_1fr_1fr] lg:items-end">
+                                    <div
+                                        role="group"
+                                        aria-label="Status"
+                                        className="grid grid-cols-4 rounded-sm border border-zinc-200 bg-zinc-100 p-0.5 lg:flex dark:border-white/10 dark:bg-white/5"
+                                    >
+                                        {STATUS_TABS.map((t) => {
+                                            const active = statusFilter === t.key;
+                                            return (
+                                                <button
+                                                    key={t.key}
+                                                    type="button"
+                                                    aria-pressed={active}
+                                                    onClick={() => setStatusFilter(t.key)}
+                                                    className={`relative flex flex-col items-center justify-center rounded-sm px-2 py-1.5 text-sm transition-colors lg:flex-row lg:px-3 ${FOCUS} ${
+                                                        active
+                                                            ? "bg-white font-semibold text-[#0B1E3D] shadow-sm after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-sm after:bg-orange-400 dark:bg-white/15 dark:text-white"
+                                                            : "text-zinc-600 hover:bg-white/60 dark:text-zinc-300 dark:hover:bg-white/10"
+                                                    }`}
+                                                >
+                                                    <span>{t.label}</span>
+                                                    <span className="text-xs font-normal tabular-nums text-zinc-400 lg:ml-1.5">
+                                                        {statusCounts[t.key]}
+                                                    </span>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+
+                                    <select
+                                        aria-label="Payment method"
+                                        value={methodFilter}
+                                        onChange={(e) =>
+                                            setMethodFilter(
+                                                e.target.value as PaymentMethod | "ALL",
+                                            )
+                                        }
+                                        className={FIELD}
+                                    >
+                                        <option value="ALL">All methods</option>
+                                        {ALL_METHODS.map((m) => (
+                                            <option key={m} value={m}>
+                                                {METHOD_LABEL[m]}
+                                            </option>
+                                        ))}
+                                    </select>
+
+                                    <select
+                                        aria-label="Sort transactions"
+                                        value={sort}
+                                        onChange={(e) => setSort(e.target.value as SortKey)}
+                                        className={FIELD}
+                                    >
+                                        {SORTS.map((s) => (
+                                            <option key={s.key} value={s.key}>
+                                                {s.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
-
-                            <select
-                                aria-label="Payment method"
-                                value={methodFilter}
-                                onChange={(e) =>
-                                    setMethodFilter(e.target.value as PaymentMethod | "ALL")
-                                }
-                                className={FIELD}
-                            >
-                                <option value="ALL">All methods</option>
-                                {ALL_METHODS.map((m) => (
-                                    <option key={m} value={m}>
-                                        {METHOD_LABEL[m]}
-                                    </option>
-                                ))}
-                            </select>
-
-                            <select
-                                aria-label="Sort transactions"
-                                value={sort}
-                                onChange={(e) => setSort(e.target.value as SortKey)}
-                                className={FIELD}
-                            >
-                                {SORTS.map((s) => (
-                                    <option key={s.key} value={s.key}>
-                                        {s.label}
-                                    </option>
-                                ))}
-                            </select>
                         </div>
                     </div>
 
                     {/* Result line */}
                     <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-zinc-600 dark:text-zinc-300">
                         <p aria-live="polite">
-                            Showing <span className="font-semibold tabular-nums">{filtered.length}</span> of{" "}
-                            <span className="tabular-nums">{transactions.length}</span> transactions
+                            Showing{" "}
+                            <span className="font-semibold tabular-nums">
+                                {filtered.length}
+                            </span>{" "}
+                            of <span className="tabular-nums">{transactions.length}</span>{" "}
+                            transactions
                             {updatedAt && (
                                 <span className="ml-2 text-xs text-zinc-400">
                                     Updated{" "}
@@ -703,7 +772,9 @@ function TransactionsList() {
 
                     {/* List */}
                     <div
-                        className={`${CARD} mt-3 overflow-hidden transition-opacity ${loading ? "opacity-70" : ""}`}
+                        className={`${CARD} mt-3 overflow-hidden transition-opacity ${
+                            loading ? "opacity-70" : ""
+                        }`}
                     >
                         {filtered.length === 0 ? (
                             <EmptyState
@@ -742,14 +813,17 @@ function TransactionsList() {
                                                                 {r.student}
                                                             </p>
                                                             <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">
-                                                                {[r.course, r.code].filter((p) => p && p !== "—").join(" · ") || "—"}
+                                                                {[r.course, r.code]
+                                                                    .filter((p) => p && p !== "—")
+                                                                    .join(" · ") || "—"}
                                                             </p>
                                                         </div>
                                                         <p
-                                                            className={`shrink-0 font-semibold tabular-nums ${r.tx.status === "REVERSED"
-                                                                ? "text-zinc-400 line-through"
-                                                                : "text-[#0B1E3D] dark:text-white"
-                                                                }`}
+                                                            className={`shrink-0 font-semibold tabular-nums ${
+                                                                r.tx.status === "REVERSED"
+                                                                    ? "text-zinc-400 line-through"
+                                                                    : "text-[#0B1E3D] dark:text-white"
+                                                            }`}
                                                         >
                                                             {formatMoney(r.tx.amount, r.tx.currency)}
                                                         </p>
@@ -764,12 +838,15 @@ function TransactionsList() {
                                                 {/* Tablet and up: one cell per column */}
                                                 <div className="hidden md:contents">
                                                     <div className="text-zinc-600 dark:text-zinc-300">
-                                                        <span className="block whitespace-nowrap">{r.date}</span>
+                                                        <span className="block whitespace-nowrap">
+                                                            {r.date}
+                                                        </span>
                                                         <span
-                                                            className={`block text-xs ${r.time === "date only"
-                                                                ? "italic text-zinc-400 dark:text-zinc-500"
-                                                                : "tabular-nums text-zinc-500 dark:text-zinc-400"
-                                                                }`}
+                                                            className={`block text-xs ${
+                                                                r.time === "date only"
+                                                                    ? "italic text-zinc-400 dark:text-zinc-500"
+                                                                    : "tabular-nums text-zinc-500 dark:text-zinc-400"
+                                                            }`}
                                                         >
                                                             {r.time}
                                                         </span>
@@ -798,10 +875,11 @@ function TransactionsList() {
                                                         {METHOD_LABEL[r.tx.paymentMethod]}
                                                     </span>
                                                     <span
-                                                        className={`text-right font-medium tabular-nums ${r.tx.status === "REVERSED"
-                                                            ? "text-zinc-400 line-through"
-                                                            : "text-[#0B1E3D] dark:text-white"
-                                                            }`}
+                                                        className={`text-right font-medium tabular-nums ${
+                                                            r.tx.status === "REVERSED"
+                                                                ? "text-zinc-400 line-through"
+                                                                : "text-[#0B1E3D] dark:text-white"
+                                                        }`}
                                                     >
                                                         {formatMoney(r.tx.amount, r.tx.currency)}
                                                     </span>
@@ -821,7 +899,9 @@ function TransactionsList() {
                         <div className="mt-4 flex justify-center">
                             <button
                                 type="button"
-                                onClick={() => setLimitState({ sig, n: limit + PAGE })}
+                                onClick={() =>
+                                    setLimitState({ sig, n: limit + PAGE })
+                                }
                                 className={`${BTN} ${FOCUS}`}
                             >
                                 Show {Math.min(PAGE, filtered.length - shown.length)} more
@@ -883,18 +963,22 @@ function Stat({
     };
 
     return (
-        <div className={`${CARD} flex min-w-0 items-center gap-3 p-4`}>
+        <div className={`${CARD} min-w-0 p-2.5 sm:flex sm:items-center sm:gap-3 sm:p-4`}>
             <span
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-sm ring-1 ring-inset ${tones[tone]}`}
+                className={`hidden h-10 w-10 shrink-0 items-center justify-center rounded-sm ring-1 ring-inset sm:flex ${tones[tone]}`}
             >
                 {icon}
             </span>
             <div className="min-w-0">
-                <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">{label}</p>
-                <p className="truncate text-lg font-semibold tabular-nums text-[#0B1E3D] dark:text-white">
+                <p className="truncate text-[10px] font-medium uppercase leading-tight tracking-[0.1em] text-zinc-500 dark:text-zinc-400 sm:text-xs sm:font-normal sm:normal-case sm:tracking-normal">
+                    {label}
+                </p>
+                <p className="mt-0.5 truncate text-sm font-semibold tabular-nums text-[#0B1E3D] dark:text-white sm:mt-0 sm:text-lg">
                     {value}
                 </p>
-                <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">{note}</p>
+                <p className="hidden truncate text-xs text-zinc-500 dark:text-zinc-400 sm:block">
+                    {note}
+                </p>
             </div>
         </div>
     );

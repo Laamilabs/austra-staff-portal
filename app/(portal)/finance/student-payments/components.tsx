@@ -1,14 +1,15 @@
-// app/(portal)/finance/student-payments/components.tsx
-
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import type { RefObject } from "react";
 import {
+    ChevronDown,
     ChevronRight,
     LoaderCircle,
     RefreshCw,
     Search,
+    SlidersHorizontal,
     TriangleAlert,
     X,
 } from "lucide-react";
@@ -31,7 +32,6 @@ import {
     money,
     riskLabel,
 } from "./helpers";
-
 
 /* ------------------------------------------------------------------ */
 /* First-load skeleton                                                 */
@@ -128,7 +128,7 @@ export function ErrorBanner({
 }
 
 /* ------------------------------------------------------------------ */
-/* KPI strip                                                           */
+/* KPI strip — minimalist on mobile, full at sm+                       */
 /* ------------------------------------------------------------------ */
 
 export interface KpiTotals {
@@ -155,28 +155,36 @@ export function KpiStrip({
     onToggleMinOut: () => void;
 }) {
     return (
-        <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <section className={`${CARD} p-4`}>
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <div className="mt-5 grid grid-cols-2 gap-2 sm:mt-7 sm:gap-4 lg:grid-cols-4">
+            {/* Total assessed */}
+            <section className={`${CARD} p-3 sm:p-4`}>
+                <p className="text-[10px] font-medium uppercase leading-tight tracking-[0.12em] text-zinc-500 dark:text-zinc-400 sm:text-sm sm:font-normal sm:normal-case sm:tracking-normal">
                     Total assessed
                 </p>
-                <p className="mt-1.5 text-2xl font-semibold tabular-nums text-[#0B1E3D] dark:text-white">
+                <p className="mt-1 truncate text-lg font-semibold tabular-nums text-[#0B1E3D] dark:text-white sm:mt-1.5 sm:text-2xl">
                     {money(totals.total, primary)}
                 </p>
-                <p className="mt-1 text-xs text-zinc-500">
+                <p className="mt-1 hidden text-xs text-zinc-500 sm:block">
                     {activeCount} assignments · {groupsCount} students
                 </p>
             </section>
 
-            <section className={`${CARD} p-4`}>
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                    Collected
-                </p>
-                <p className="mt-1.5 text-2xl font-semibold tabular-nums text-[#0B1E3D] dark:text-white">
+            {/* Collected */}
+            <section className={`${CARD} p-3 sm:p-4`}>
+                <div className="flex items-baseline justify-between gap-2">
+                    <p className="text-[10px] font-medium uppercase leading-tight tracking-[0.12em] text-zinc-500 dark:text-zinc-400 sm:text-sm sm:font-normal sm:normal-case sm:tracking-normal">
+                        Collected
+                    </p>
+                    <span className="shrink-0 text-[11px] font-semibold tabular-nums text-emerald-600 dark:text-emerald-400 sm:hidden">
+                        {Math.round(totals.rate)}%
+                    </span>
+                </div>
+                <p className="mt-1 truncate text-lg font-semibold tabular-nums text-[#0B1E3D] dark:text-white sm:mt-1.5 sm:text-2xl">
                     {money(totals.paid, primary)}
                 </p>
-                <div className="mt-4">
-                    <div className="mb-2 flex items-center justify-between gap-3">
+                <div className="mt-2 sm:mt-4">
+                    {/* Desktop-only label + rate row */}
+                    <div className="mb-2 hidden items-center justify-between gap-3 sm:flex">
                         <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
                             Collection rate
                         </span>
@@ -190,7 +198,7 @@ export function KpiStrip({
                         aria-valuemin={0}
                         aria-valuemax={100}
                         aria-valuenow={Math.min(100, Math.max(0, Math.round(totals.rate)))}
-                        className="h-2.5 w-full overflow-hidden rounded-full bg-zinc-100 ring-1 ring-inset ring-zinc-200/60 dark:bg-white/[0.07] dark:ring-white/[0.06]"
+                        className="h-1 w-full overflow-hidden rounded-full bg-zinc-100 ring-1 ring-inset ring-zinc-200/60 dark:bg-white/[0.07] dark:ring-white/[0.06] sm:h-2.5"
                     >
                         <div
                             className="h-full rounded-full bg-gradient-to-r from-emerald-600 to-emerald-400 transition-[width] duration-700 ease-out motion-reduce:transition-none"
@@ -200,37 +208,49 @@ export function KpiStrip({
                 </div>
             </section>
 
-            <section
-                className={`${CARD} border-t-2 border-t-orange-400 p-4`}
-            >
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                    Outstanding balance
+            {/* Outstanding balance */}
+            <section className={`${CARD} border-t-2 border-t-orange-400 p-3 sm:p-4`}>
+                <p className="text-[10px] font-medium uppercase leading-tight tracking-[0.12em] text-zinc-500 dark:text-zinc-400 sm:text-sm sm:font-normal sm:normal-case sm:tracking-normal">
+                    Outstanding
                 </p>
-                <p className="mt-1.5 text-2xl font-semibold tabular-nums text-[#0B1E3D] dark:text-white">
+                <p className="mt-1 truncate text-lg font-semibold tabular-nums text-[#0B1E3D] dark:text-white sm:mt-1.5 sm:text-2xl">
                     {money(totals.balance, primary)}
                 </p>
-                <p className="mt-1 text-xs text-zinc-500">
+                <p className="mt-1 hidden text-xs text-zinc-500 sm:block">
                     {totals.total > 0
                         ? `${Math.round(100 - totals.rate)}% of assessed fees`
                         : "Nothing assessed"}
                 </p>
             </section>
 
+            {/* Needs attention — button */}
             <button
                 type="button"
                 aria-pressed={minOut === 75}
                 onClick={onToggleMinOut}
-                className={`${CARD} p-4 text-left transition-colors hover:bg-red-50/60 dark:hover:bg-red-500/10 ${FOCUS} ${minOut === 75 ? "ring-2 ring-red-500" : ""}`}
+                className={`${CARD} border-t-2 border-t-red-400 p-3 text-left transition-colors hover:bg-red-50/60 active:bg-red-50/70 dark:hover:bg-red-500/10 dark:active:bg-red-500/15 sm:border-t-0 sm:p-4 ${FOCUS} ${minOut === 75 ? "ring-2 ring-red-500" : ""}`}
             >
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                    Needs attention
-                </p>
+                <div className="flex items-baseline justify-between gap-2">
+                    <p className="text-[10px] font-medium uppercase leading-tight tracking-[0.12em] text-zinc-500 dark:text-zinc-400 sm:text-sm sm:font-normal sm:normal-case sm:tracking-normal">
+                        Attention
+                    </p>
+                    {minOut === 75 && (
+                        <span
+                            aria-hidden
+                            className="h-1.5 w-1.5 shrink-0 rounded-full bg-red-500 sm:hidden"
+                        />
+                    )}
+                </div>
                 <p
-                    className={`mt-1.5 text-2xl font-semibold tabular-nums ${totals.high ? "text-red-600 dark:text-red-400" : "text-[#0B1E3D] dark:text-white"}`}
+                    className={`mt-1 text-lg font-semibold tabular-nums sm:mt-1.5 sm:text-2xl ${
+                        totals.high
+                            ? "text-red-600 dark:text-red-400"
+                            : "text-[#0B1E3D] dark:text-white"
+                    }`}
                 >
                     {totals.high}
                 </p>
-                <p className="mt-1 text-xs text-zinc-500">
+                <p className="mt-1 hidden text-xs text-zinc-500 sm:block">
                     {minOut === 75
                         ? "Showing only these · click to reset"
                         : "75%+ still owed · click to filter"}
@@ -275,6 +295,15 @@ export interface ToolbarProps {
     minBalance: string;
     onMinBalanceChange: (v: string) => void;
     primary: string;
+
+    /**
+     * Optional override for the badge count shown on the mobile
+     * filter toggle. If omitted, the component infers it from the
+     * obvious filter props (course / structure / status / minOut /
+     * minBalance). Pass this if the parent's defaults for
+     * `status` or `pay` differ from "live" / "all".
+     */
+    activeFilterCount?: number;
 }
 
 export function Toolbar(props: ToolbarProps) {
@@ -302,11 +331,28 @@ export function Toolbar(props: ToolbarProps) {
         minBalance,
         onMinBalanceChange,
         primary,
+        activeFilterCount: explicitCount,
     } = props;
 
+    // Best-effort active-filter count. Matches the defaults rendered by
+    // this component ("All courses" / "All fee structures" / "live" /
+    // "Any" / empty balance). Parent can override via `activeFilterCount`.
+    const inferredCount =
+        (course !== "all" ? 1 : 0) +
+        (structure !== "all" ? 1 : 0) +
+        (status !== "live" ? 1 : 0) +
+        (minOut !== 0 ? 1 : 0) +
+        (minBalance.trim() !== "" ? 1 : 0);
+
+    const activeFilterCount = explicitCount ?? inferredCount;
+
+    // Start expanded on mobile if filters are already applied on mount,
+    // so the user immediately sees why results are narrowed.
+    const [expanded, setExpanded] = useState(activeFilterCount > 0);
+
     return (
-        <div className={`${CARD} mt-6 space-y-4 p-3 sm:p-4`}>
-            {/* Search + refresh */}
+        <div className={`${CARD} mt-6 p-3 sm:p-4`}>
+            {/* Search + refresh — always visible */}
             <div className="flex flex-col gap-2 sm:flex-row">
                 <div className="relative min-w-0 flex-1">
                     <Search
@@ -346,150 +392,227 @@ export function Toolbar(props: ToolbarProps) {
                 >
                     <RefreshCw
                         size={15}
-                        className={
-                            loading ? "motion-safe:animate-spin" : ""
-                        }
+                        className={loading ? "motion-safe:animate-spin" : ""}
                     />
                     {loading ? "Refreshing" : "Refresh"}
                 </button>
             </div>
 
-            {/* Four dropdowns */}
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <label className="grid min-w-0 gap-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                    <span>Course</span>
-                    <select
-                        value={course}
-                        onChange={(e) => onCourseChange(e.target.value)}
-                        className={`${FIELD} w-full`}
-                    >
-                        <option value="all">All courses</option>
-                        {courseOptions.map(([id, label]) => (
-                            <option key={id} value={id}>
-                                {label}
-                            </option>
-                        ))}
-                    </select>
-                </label>
-                <label className="grid min-w-0 gap-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                    <span>Fee structure</span>
-                    <select
-                        value={structure}
-                        onChange={(e) => onStructureChange(e.target.value)}
-                        className={`${FIELD} w-full`}
-                    >
-                        <option value="all">All fee structures</option>
-                        {structureOptions.map(([id, label]) => (
-                            <option key={id} value={id}>
-                                {label}
-                            </option>
-                        ))}
-                    </select>
-                </label>
-                <label className="grid min-w-0 gap-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                    <span>Assignment status</span>
-                    <select
-                        value={status}
-                        onChange={(e) =>
-                            onStatusChange(e.target.value as StatusFilter)
+            {/* Mobile-only filter toggle */}
+            <button
+                type="button"
+                onClick={() => setExpanded((v) => !v)}
+                aria-expanded={expanded}
+                aria-controls="toolbar-filters"
+                className={`mt-3 flex h-10 w-full items-center justify-between gap-2 rounded-sm border bg-white px-3 text-sm font-medium transition-colors sm:hidden dark:bg-[#0B1E3D] ${FOCUS} ${activeFilterCount > 0
+                        ? "border-orange-400/60 text-[#0B1E3D] hover:bg-orange-50/60 dark:text-white dark:hover:bg-orange-400/10"
+                        : "border-zinc-200 text-[#0B1E3D] hover:bg-zinc-50 dark:border-white/10 dark:text-white dark:hover:bg-white/5"
+                    }`}
+            >
+                <span className="flex items-center gap-2">
+                    <SlidersHorizontal
+                        size={15}
+                        className={
+                            activeFilterCount > 0
+                                ? "text-orange-500"
+                                : "text-zinc-500 dark:text-zinc-400"
                         }
-                        className={`${FIELD} w-full`}
-                    >
-                        <option value="live">Active and completed</option>
-                        <option value="ACTIVE">Active only</option>
-                        <option value="COMPLETED">Completed only</option>
-                        <option value="CANCELLED">Cancelled only</option>
-                        <option value="all">Everything</option>
-                    </select>
-                </label>
-                <label className="grid min-w-0 gap-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                    <span>Sort students by</span>
-                    <select
-                        value={sort}
-                        onChange={(e) =>
-                            onSortChange(e.target.value as SortKey)
-                        }
-                        className={`${FIELD} w-full`}
-                    >
-                        {SORTS.map((o: { key: SortKey; label: string }) => (
-                            <option key={o.key} value={o.key}>
-                                {o.label}
-                            </option>
-                        ))}
-                    </select>
-                </label>
-            </div>
-
-            {/* Payment tabs + still-owed + balance floor */}
-            <div className="grid gap-4 border-t border-zinc-100 pt-4 sm:grid-cols-2 lg:flex lg:flex-wrap lg:items-end lg:gap-x-8 dark:border-white/10">
-                <div className="grid min-w-0 gap-1 text-xs font-medium text-zinc-500 sm:col-span-2 lg:col-span-1 dark:text-zinc-400">
-                    <span id="pay-label">Payment</span>
-                    <div
-                        role="group"
-                        aria-labelledby="pay-label"
-                        className="grid grid-cols-4 rounded-sm border border-zinc-200 bg-zinc-100 p-0.5 lg:flex dark:border-white/10 dark:bg-white/5"
-                    >
-                        {PAY_TABS.map((t: { key: PayFilter; label: string }) => {
-                            const active = pay === t.key;
-                            return (
-                                <button
-                                    key={t.key}
-                                    type="button"
-                                    aria-pressed={active}
-                                    onClick={() => onPayChange(t.key)}
-                                    className={`relative flex flex-col items-center justify-center rounded-sm px-2 py-1.5 text-sm transition-colors lg:flex-row lg:px-3 ${FOCUS} ${active
-                                            ? "bg-white font-semibold text-[#0B1E3D] shadow-sm after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-sm after:bg-orange-400 dark:bg-white/15 dark:text-white"
-                                            : "font-normal text-zinc-600 hover:bg-white/60 dark:text-zinc-300 dark:hover:bg-white/10"
-                                        }`}
-                                >
-                                    <span>{t.label}</span>
-                                    <span className="text-xs font-normal tabular-nums text-zinc-400 lg:ml-1.5">
-                                        {payCounts[t.key]}
-                                    </span>
-                                </button>
-                            );
-                        })}
-                    </div>
-                </div>
-
-                <div className="grid min-w-0 gap-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                    <span id="owed-label">Still owed</span>
-                    <div
-                        role="group"
-                        aria-labelledby="owed-label"
-                        className="grid grid-cols-4 gap-1 lg:flex"
-                    >
-                        {[0, 25, 50, 75].map((n) => (
-                            <button
-                                key={n}
-                                type="button"
-                                aria-pressed={minOut === n}
-                                onClick={() => onMinOutChange(n)}
-                                className={`rounded-sm border px-2.5 py-2 text-xs font-semibold transition-colors lg:py-1.5 ${FOCUS} ${minOut === n
-                                        ? "border-orange-400 bg-orange-400/10 text-orange-700 dark:text-orange-300"
-                                        : "border-zinc-200 text-zinc-600 hover:bg-zinc-50 dark:border-white/15 dark:text-zinc-300 dark:hover:bg-white/10"
-                                    }`}
-                            >
-                                {n === 0 ? "Any" : `${n}%+`}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                <label className="grid min-w-0 gap-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                    <span>Balance of at least ({primary})</span>
-                    <input
-                        type="number"
-                        min={0}
-                        inputMode="numeric"
-                        value={minBalance}
-                        onChange={(e) =>
-                            onMinBalanceChange(e.target.value)
-                        }
-                        placeholder="0"
-                        className={`${FIELD} w-full tabular-nums lg:w-40`}
+                        aria-hidden
                     />
-                </label>
+                    Filters
+                    {activeFilterCount > 0 && (
+                        <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-400 px-1.5 text-[10px] font-bold tabular-nums text-[#0B1E3D]">
+                            {activeFilterCount}
+                        </span>
+                    )}
+                </span>
+                <ChevronDown
+                    size={15}
+                    aria-hidden
+                    className={`shrink-0 text-zinc-400 transition-transform duration-200 ${expanded ? "rotate-180" : ""
+                        }`}
+                />
+            </button>
+
+            {/* Collapsible filters (mobile) / always visible (sm+) */}
+            <div
+                id="toolbar-filters"
+                className={`grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none ${expanded
+                        ? "grid-rows-[1fr]"
+                        : "grid-rows-[0fr] sm:grid-rows-[1fr]"
+                    }`}
+            >
+                <div className="overflow-hidden">
+                    <div className="mt-3 space-y-3 sm:mt-4 sm:space-y-4">
+                        {/* Four dropdowns */}
+                        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                            <label className="grid min-w-0 gap-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                                <span>Course</span>
+                                <select
+                                    value={course}
+                                    onChange={(e) =>
+                                        onCourseChange(e.target.value)
+                                    }
+                                    className={`${FIELD} w-full`}
+                                >
+                                    <option value="all">All courses</option>
+                                    {courseOptions.map(([id, label]) => (
+                                        <option key={id} value={id}>
+                                            {label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+                            <label className="grid min-w-0 gap-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                                <span>Fee structure</span>
+                                <select
+                                    value={structure}
+                                    onChange={(e) =>
+                                        onStructureChange(e.target.value)
+                                    }
+                                    className={`${FIELD} w-full`}
+                                >
+                                    <option value="all">
+                                        All fee structures
+                                    </option>
+                                    {structureOptions.map(([id, label]) => (
+                                        <option key={id} value={id}>
+                                            {label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+                            <label className="grid min-w-0 gap-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                                <span>Assignment status</span>
+                                <select
+                                    value={status}
+                                    onChange={(e) =>
+                                        onStatusChange(
+                                            e.target.value as StatusFilter,
+                                        )
+                                    }
+                                    className={`${FIELD} w-full`}
+                                >
+                                    <option value="live">
+                                        Active and completed
+                                    </option>
+                                    <option value="ACTIVE">
+                                        Active only
+                                    </option>
+                                    <option value="COMPLETED">
+                                        Completed only
+                                    </option>
+                                    <option value="CANCELLED">
+                                        Cancelled only
+                                    </option>
+                                    <option value="all">Everything</option>
+                                </select>
+                            </label>
+                            <label className="grid min-w-0 gap-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                                <span>Sort students by</span>
+                                <select
+                                    value={sort}
+                                    onChange={(e) =>
+                                        onSortChange(e.target.value as SortKey)
+                                    }
+                                    className={`${FIELD} w-full`}
+                                >
+                                    {SORTS.map(
+                                        (o: {
+                                            key: SortKey;
+                                            label: string;
+                                        }) => (
+                                            <option key={o.key} value={o.key}>
+                                                {o.label}
+                                            </option>
+                                        ),
+                                    )}
+                                </select>
+                            </label>
+                        </div>
+
+                        {/* Payment tabs + still-owed + balance floor */}
+                        <div className="grid gap-4 border-t border-zinc-100 pt-4 sm:grid-cols-2 lg:flex lg:flex-wrap lg:items-end lg:gap-x-8 dark:border-white/10">
+                            <div className="grid min-w-0 gap-1 text-xs font-medium text-zinc-500 sm:col-span-2 lg:col-span-1 dark:text-zinc-400">
+                                <span id="pay-label">Payment</span>
+                                <div
+                                    role="group"
+                                    aria-labelledby="pay-label"
+                                    className="grid grid-cols-4 rounded-sm border border-zinc-200 bg-zinc-100 p-0.5 lg:flex dark:border-white/10 dark:bg-white/5"
+                                >
+                                    {PAY_TABS.map(
+                                        (t: {
+                                            key: PayFilter;
+                                            label: string;
+                                        }) => {
+                                            const active = pay === t.key;
+                                            return (
+                                                <button
+                                                    key={t.key}
+                                                    type="button"
+                                                    aria-pressed={active}
+                                                    onClick={() =>
+                                                        onPayChange(t.key)
+                                                    }
+                                                    className={`relative flex flex-col items-center justify-center rounded-sm px-2 py-1.5 text-sm transition-colors lg:flex-row lg:px-3 ${FOCUS} ${active
+                                                            ? "bg-white font-semibold text-[#0B1E3D] shadow-sm after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-sm after:bg-orange-400 dark:bg-white/15 dark:text-white"
+                                                            : "font-normal text-zinc-600 hover:bg-white/60 dark:text-zinc-300 dark:hover:bg-white/10"
+                                                        }`}
+                                                >
+                                                    <span>{t.label}</span>
+                                                    <span className="text-xs font-normal tabular-nums text-zinc-400 lg:ml-1.5">
+                                                        {payCounts[t.key]}
+                                                    </span>
+                                                </button>
+                                            );
+                                        },
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="grid min-w-0 gap-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                                <span id="owed-label">Still owed</span>
+                                <div
+                                    role="group"
+                                    aria-labelledby="owed-label"
+                                    className="grid grid-cols-4 gap-1 lg:flex"
+                                >
+                                    {[0, 25, 50, 75].map((n) => (
+                                        <button
+                                            key={n}
+                                            type="button"
+                                            aria-pressed={minOut === n}
+                                            onClick={() => onMinOutChange(n)}
+                                            className={`rounded-sm border px-2.5 py-2 text-xs font-semibold transition-colors lg:py-1.5 ${FOCUS} ${minOut === n
+                                                    ? "border-orange-400 bg-orange-400/10 text-orange-700 dark:text-orange-300"
+                                                    : "border-zinc-200 text-zinc-600 hover:bg-zinc-50 dark:border-white/15 dark:text-zinc-300 dark:hover:bg-white/10"
+                                                }`}
+                                        >
+                                            {n === 0 ? "Any" : `${n}%+`}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <label className="grid min-w-0 gap-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                                <span>
+                                    Balance of at least ({primary})
+                                </span>
+                                <input
+                                    type="number"
+                                    min={0}
+                                    inputMode="numeric"
+                                    value={minBalance}
+                                    onChange={(e) =>
+                                        onMinBalanceChange(e.target.value)
+                                    }
+                                    placeholder="0"
+                                    className={`${FIELD} w-full tabular-nums lg:w-40`}
+                                />
+                            </label>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );
