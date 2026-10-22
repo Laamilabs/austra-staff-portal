@@ -465,8 +465,8 @@ export default function SelectStudent({
             >
                 <UserRound
                     className={`h-4 w-4 shrink-0 ${canOpen
-                            ? "text-emerald-600 dark:text-emerald-400"
-                            : "text-zinc-400 dark:text-zinc-500"
+                        ? "text-emerald-600 dark:text-emerald-400"
+                        : "text-zinc-400 dark:text-zinc-500"
                         }`}
                 />
 
@@ -481,7 +481,8 @@ export default function SelectStudent({
                             {getStudentName(selectedStudent)}
                         </span>
 
-                        <span className={CODE_CHIP}>
+                        {/* Courses chip — desktop only, gives the name full width on mobile */}
+                        <span className={`hidden sm:inline ${CODE_CHIP}`}>
                             {selectedStudent.courses?.length ?? 0}{" "}
                             {(selectedStudent.courses?.length ?? 0) === 1
                                 ? "course"
@@ -498,8 +499,8 @@ export default function SelectStudent({
             <ChevronDown
                 aria-hidden
                 className={`pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400 transition-transform duration-200 dark:text-zinc-500 ${open
-                        ? "rotate-180 text-orange-500 dark:text-orange-400"
-                        : ""
+                    ? "rotate-180 text-orange-500 dark:text-orange-400"
+                    : ""
                     }`}
             />
 
@@ -645,17 +646,17 @@ export default function SelectStudent({
                                         }
                                     }}
                                     className={`relative flex min-h-12 cursor-pointer items-center gap-2 rounded-sm px-3 py-2 text-[13px] transition-colors ${isSelected
-                                            ? "bg-[#0B1E3D]/[0.07] font-semibold text-[#0B1E3D] dark:bg-white/10 dark:text-white"
-                                            : isActive
-                                                ? "bg-[#0B1E3D]/[0.04] text-[#0B1E3D] dark:bg-white/[0.06] dark:text-white"
-                                                : "text-zinc-700 dark:text-zinc-300"
+                                        ? "bg-[#0B1E3D]/[0.07] font-semibold text-[#0B1E3D] dark:bg-white/10 dark:text-white"
+                                        : isActive
+                                            ? "bg-[#0B1E3D]/[0.04] text-[#0B1E3D] dark:bg-white/[0.06] dark:text-white"
+                                            : "text-zinc-700 dark:text-zinc-300"
                                         }`}
                                 >
                                     <span
                                         aria-hidden
                                         className={`absolute left-0 top-1/2 h-4 w-0.75 -translate-y-1/2 rounded-sm bg-orange-400 transition-transform duration-200 ${isSelected
-                                                ? "scale-y-100"
-                                                : "scale-y-0"
+                                            ? "scale-y-100"
+                                            : "scale-y-0"
                                             }`}
                                     />
 
@@ -688,8 +689,8 @@ export default function SelectStudent({
 
                                     <Check
                                         className={`h-4 w-4 shrink-0 text-orange-500 dark:text-orange-400 ${isSelected
-                                                ? "opacity-100"
-                                                : "opacity-0"
+                                            ? "opacity-100"
+                                            : "opacity-0"
                                             }`}
                                         strokeWidth={2.4}
                                     />
