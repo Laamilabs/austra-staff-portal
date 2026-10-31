@@ -223,7 +223,7 @@ export default function StudentDetailsPage({ params }: PageProps) {
           <div className="flex flex-col md:flex-row md:items-stretch">
             {/* PROFILE IMAGE — flush-left panel, full height on md+ */}
             <div
-              className={`group relative h-64 w-full shrink-0 overflow-hidden border-b-2 border-orange-400/70 bg-zinc-800 sm:h-72 md:h-auto md:w-48 md:border-b-0 md:border-r-2 md:border-r-orange-400/70 lg:w-56 ${hasUser
+              className={`group relative aspect-square w-full shrink-0 overflow-hidden border-b-2 border-orange-400/70 bg-linear-to-br from-[#0B1E3D] to-zinc-800 sm:aspect-auto sm:h-72 md:h-auto md:w-48 md:border-b-0 md:border-r-2 md:border-r-orange-400/70 lg:w-56 ${hasUser
                 ? "cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-orange-400/60"
                 : ""
                 }`}
@@ -248,12 +248,12 @@ export default function StudentDetailsPage({ params }: PageProps) {
                   src={profileImageValue}
                   alt={fullName}
                   fill
-                  className="object-cover object-top"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 192px, 224px"
+                  className="object-contain"
+                  sizes="(max-width: 640px) 100vw, (max-width: 768px) 100vw, (max-width: 1024px) 192px, 224px"
                   priority
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-[#0B1E3D] to-zinc-800 text-5xl font-bold uppercase tracking-wider text-orange-400 lg:text-6xl">
+                <div className="flex h-full w-full items-center justify-center text-5xl font-bold uppercase tracking-wider text-orange-400 lg:text-6xl">
                   {initials}
                 </div>
               )}
@@ -269,7 +269,7 @@ export default function StudentDetailsPage({ params }: PageProps) {
             </div>
 
             {/* DETAILS */}
-            <div className="flex min-w-0 flex-1 flex-col gap-6 p-6 md:flex-row md:items-center md:justify-between md:gap-8 md:p-8">
+            <div className="flex min-w-0 flex-1 flex-col gap-6 p-4 sm:p-6 md:flex-row md:items-center md:justify-between md:gap-8 md:p-8">
               <div className="min-w-0 flex-1 text-center md:text-left">
                 {/* Eyebrow */}
                 <div className="mb-3 flex items-center justify-center gap-2 md:justify-start">
@@ -279,17 +279,19 @@ export default function StudentDetailsPage({ params }: PageProps) {
                   <span className="h-px w-8 bg-orange-400/50" />
                 </div>
 
-                {/* Name — the visual anchor */}
-                <h1 className="truncate text-2xl font-bold leading-tight tracking-tight text-white md:text-3xl lg:text-4xl">
+                {/* Name — wraps instead of truncating */}
+                <h1 className="break-words text-balance text-2xl font-bold leading-tight tracking-tight text-white md:text-3xl lg:text-4xl">
                   {fullName}
                 </h1>
 
-                {/* Contact row — quiet, secondary */}
-                <div className="mt-3 flex flex-col items-center gap-2 text-sm text-zinc-400 sm:flex-row sm:flex-wrap sm:justify-center md:justify-start">
+                {/* Contact row — full email visible, wraps instead of clipping */}
+                <div className="mt-3 flex flex-col items-center gap-1.5 text-sm text-zinc-400 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-2 md:justify-start">
                   {student.contact.email && (
-                    <span className="inline-flex items-center gap-1.5">
-                      <Mail size={13} className="text-orange-400/80" />
-                      <span className="truncate">{student.contact.email}</span>
+                    <span className="inline-flex min-w-0 max-w-full items-start gap-1.5">
+                      <Mail size={13} className="mt-0.5 shrink-0 text-orange-400/80" />
+                      <span className="text-left [overflow-wrap:anywhere]">
+                        {student.contact.email}
+                      </span>
                     </span>
                   )}
 
@@ -299,7 +301,7 @@ export default function StudentDetailsPage({ params }: PageProps) {
 
                   {student.contact.phoneNumber && (
                     <span className="inline-flex items-center gap-1.5">
-                      <Phone size={13} className="text-orange-400/80" />
+                      <Phone size={13} className="shrink-0 text-orange-400/80" />
                       {student.contact.phoneNumber}
                     </span>
                   )}
@@ -338,11 +340,12 @@ export default function StudentDetailsPage({ params }: PageProps) {
                     </span>
                   )}
                 </div>
-                {/* Edit Student */}
+
+                {/* Edit Student — full-width on phones for a proper touch target */}
                 <div className="mt-5 flex justify-center md:justify-start">
                   <Link
                     href={`/students/${student._id}/edit`}
-                    className="inline-flex items-center gap-2 rounded-sm border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:border-orange-400/50 hover:bg-orange-400/10 hover:text-orange-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/60"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-sm border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:border-orange-400/50 hover:bg-orange-400/10 hover:text-orange-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/60 sm:w-auto"
                   >
                     <Pencil size={15} />
                     Edit Student

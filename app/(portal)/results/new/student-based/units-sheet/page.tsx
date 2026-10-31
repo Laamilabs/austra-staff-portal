@@ -165,7 +165,7 @@ function StudentUnitsSheetPageInner() {
                 setStudent(s);
                 setCourse(
                     (coursesRes.data ?? []).find((c) => c._id === courseId) ??
-                        null,
+                    null,
                 );
 
                 const courseUnits = (unitsRes.data ?? [])
@@ -209,8 +209,8 @@ function StudentUnitsSheetPageInner() {
                 if (cancelled) return;
                 setError(
                     err?.response?.data?.message ??
-                        err?.message ??
-                        "Failed to load student, course or units.",
+                    err?.message ??
+                    "Failed to load student, course or units.",
                 );
             } finally {
                 if (!cancelled) setLoading(false);
@@ -244,7 +244,7 @@ function StudentUnitsSheetPageInner() {
         const overallScore =
             complete.length > 0
                 ? complete.reduce((s, p) => s + p.calc.score, 0) /
-                  complete.length
+                complete.length
                 : 0;
 
         return {
@@ -392,11 +392,10 @@ function StudentUnitsSheetPageInner() {
                                                 className="inline-flex shrink-0 items-start gap-1.5 rounded-sm border border-zinc-200 bg-white px-2.5 py-1.5 text-left transition hover:border-[#082B66] focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-orange-400"
                                             >
                                                 <span
-                                                    className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${
-                                                        p.complete
-                                                            ? "bg-emerald-500"
-                                                            : "bg-amber-400"
-                                                    }`}
+                                                    className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${p.complete
+                                                        ? "bg-emerald-500"
+                                                        : "bg-amber-400"
+                                                        }`}
                                                 />
                                                 <span className="flex flex-col leading-tight">
                                                     <span className="font-mono text-[11px] font-bold text-[#082B66] dark:text-orange-400">
@@ -484,41 +483,33 @@ function Hero({
     course: Course | null;
     gradePreview: GradePreview;
 }) {
-    const initials = `${student.fullName.firstName?.[0] ?? ""}${
-        student.fullName.lastName?.[0] ?? ""
-    }`.toUpperCase();
 
     return (
         <header className="overflow-hidden rounded-sm bg-[#082B66] text-white shadow-sm dark:border dark:border-white/10">
             <div className="h-1 bg-orange-400" />
             <div className="flex flex-col gap-4 p-4 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
-                <div className="flex min-w-0 items-center gap-3 sm:gap-4">
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-sm bg-orange-400 text-base font-bold text-[#082B66] sm:h-14 sm:w-14 sm:text-lg">
-                        {initials || "?"}
-                    </span>
-                    <div className="min-w-0">
-                        <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-orange-300">
-                            <ClipboardList className="h-3 w-3 shrink-0" />
-                            Student mark sheet
-                        </p>
-                        <h1 className="text-xl font-bold leading-tight sm:text-2xl">
-                            {studentFullName(student)}
-                        </h1>
-                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-white/70">
-                            <span className="font-mono">
-                                {admissionNumber || "—"}
-                            </span>
-                            {course && (
-                                <span className="inline-flex max-w-full items-center gap-1 rounded-sm bg-white/10 px-1.5 py-0.5 text-[11px] font-semibold text-white">
-                                    <BookOpen className="h-3 w-3 shrink-0 text-orange-300" />
-                                    <span className="break-words">
-                                        {course.courseCode} — {course.name}
-                                    </span>
+                <div className="min-w-0">
+                    <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-orange-300">
+                        <ClipboardList className="h-3 w-3 shrink-0" />
+                        Student mark sheet
+                    </p>
+                    <h1 className="text-xl font-bold leading-tight sm:text-2xl">
+                        {studentFullName(student)}
+                    </h1>
+                    <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-white/70">
+                        <span className="font-mono">
+                            {admissionNumber || "—"}
+                        </span>
+                        {course && (
+                            <span className="inline-flex max-w-full items-center gap-1 rounded-sm bg-white/10 px-1.5 py-0.5 text-[11px] font-semibold text-white">
+                                <span className="wrap-break-word">
+                                    {course.name}({course.courseCode})
                                 </span>
-                            )}
-                        </div>
+                            </span>
+                        )}
                     </div>
                 </div>
+
 
                 <dl className="grid grid-cols-3 gap-px overflow-hidden rounded-sm bg-white/15 lg:min-w-[20rem]">
                     {[
@@ -801,9 +792,8 @@ function TemplateCard({
                     </span>
                 </span>
                 <ChevronDown
-                    className={`h-4 w-4 shrink-0 text-zinc-400 transition-transform ${
-                        open ? "rotate-180" : ""
-                    }`}
+                    className={`h-4 w-4 shrink-0 text-zinc-400 transition-transform ${open ? "rotate-180" : ""
+                        }`}
                 />
             </button>
 

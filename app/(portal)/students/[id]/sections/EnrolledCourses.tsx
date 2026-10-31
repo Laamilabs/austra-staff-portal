@@ -12,22 +12,22 @@ import {
     Sparkles,
     Trash2,
     X,
+    type LucideIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+    type ReactNode,
+} from "react";
 
-import {
-    Course as FullCourse,
-    courseApi,
-} from "@/app/types/courses";
-import {
-    StudentCourse,
-    studentApi,
-} from "@/app/types/students";
+import { Course as FullCourse, courseApi } from "@/app/types/courses";
+import { StudentCourse, studentApi } from "@/app/types/students";
 
 import { resolveCourseByAdmissionNumber } from "../../components/resolve-course";
 import { formatDate } from "../../components/formatters";
-import DateChip from "./datechip";
 import SelectCourse from "@/app/(portal)/courses/selectCourse";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { DatePicker } from "../../new/components/DatePicker";
@@ -41,17 +41,10 @@ interface EnrolledCoursesProps {
     courses: StudentCourse[];
     studentId: string;
 
-    /**
-     * Optional callback invoked after a successful add/remove.
-     * The parent can use it to refetch the student. If omitted,
-     * the component will refetch the student itself.
-     */
+    /** Optional callback after a successful add/remove (parent refetches). */
     onChanged?: () => void | Promise<void>;
 
-    /**
-     * Optional preloaded course catalogue. If omitted, the
-     * component fetches it once on mount.
-     */
+    /** Optional preloaded course catalogue; fetched on mount if omitted. */
     courseCatalogue?: FullCourse[];
 }
 
@@ -68,17 +61,22 @@ const emptyAddForm: AddFormState = {
 };
 
 // ---------------------------------------------------------------------------
-// Style tokens
+// Style tokens — 44px touch targets on phones, compact from sm
 // ---------------------------------------------------------------------------
 
 const labelCls =
-    "mb-1.5 block text-xs font-semibold uppercase tracking-wide text-zinc-700 dark:text-zinc-300";
+    "mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300";
 
-const btnPrimaryCls =
-    "inline-flex items-center justify-center gap-2 rounded-sm bg-blue-950 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-orange-400 dark:text-blue-950 dark:hover:bg-orange-300 dark:focus-visible:ring-offset-zinc-900";
+const btnBase =
+    "inline-flex h-11 items-center justify-center gap-2 rounded-sm px-4 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 disabled:cursor-not-allowed disabled:opacity-50 sm:h-9";
 
-const btnSecondaryCls =
-    "inline-flex items-center justify-center gap-2 rounded-sm border border-zinc-300 bg-white px-4 py-2 text-xs font-medium text-zinc-800 transition-colors hover:bg-zinc-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800";
+const btnPrimaryCls = `${btnBase} bg-blue-950 text-white hover:bg-blue-900 dark:bg-orange-400 dark:text-blue-950 dark:hover:bg-orange-300`;
+
+const btnSecondaryCls = `${btnBase} border border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800`;
+
+const btnOutlineCls = `${btnBase} border border-blue-950 text-blue-950 hover:bg-blue-950 hover:text-white dark:border-orange-400 dark:text-orange-400 dark:hover:bg-orange-400 dark:hover:text-blue-950`;
+
+const btnDangerCls = `${btnBase} border border-red-300 text-red-600 hover:bg-red-50 focus-visible:ring-red-400 dark:border-red-900/60 dark:text-red-400 dark:hover:bg-red-950/40`;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -103,9 +101,7 @@ function getCourseDisplay(courseItem: StudentCourse) {
         }
     }
 
-    const fallback = resolveCourseByAdmissionNumber(
-        courseItem.admissionNumber,
-    );
+    const fallback = resolveCourseByAdmissionNumber(courseItem.admissionNumber);
 
     if (fallback) {
         return {
@@ -130,6 +126,72 @@ function getCourseDisplay(courseItem: StudentCourse) {
     };
 }
 
+function resolveCourseIdString(courseItem: StudentCourse): string | null {
+    const cid = courseItem.courseId;
+    if (cid && typeof cid === "object") return cid._id;
+    if (typeof cid === "string") return cid;
+    return null;
+}
+
+// ---------------------------------------------------------------------------
+// Small building blocks
+// ---------------------------------------------------------------------------
+
+function Fact({
+    icon: Icon,
+    label,
+    value,
+    mono = false,
+    muted = false,
+    className = "",
+}: {
+    icon: LucideIcon;
+    label: string;
+    value: string;
+    mono?: boolean;
+    muted?: boolean;
+    className?: string;
+}) {
+    return (
+        <div className={`flex min-w-0 items-start gap-2.5 ${className}`}>
+            <Icon className="mt-0.5 h-4 w-4 shrink-0 text-zinc-400 dark:text-zinc-500" />
+            <div className="min-w-0">
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    {label}
+                </p>
+                <p
+                    className={`truncate text-sm font-medium ${mono ? "font-mono" : ""
+                        } ${muted
+                            ? "text-zinc-400 dark:text-zinc-500"
+                            : "text-zinc-900 dark:text-zinc-100"
+                        }`}
+                >
+                    {value}
+                </p>
+            </div>
+        </div>
+    );
+}
+
+function Pill({
+    children,
+    className,
+    title,
+}: {
+    children: ReactNode;
+    className: string;
+    title?: string;
+}) {
+    return (
+        <span
+            title={title}
+            className={`inline-flex items-center gap-1 whitespace-nowrap rounded-sm border px-2 py-0.5 text-xs font-medium ${className}`}
+        >
+            {children}
+        </span>
+    );
+}
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -141,10 +203,6 @@ export default function EnrolledCourses({
     courseCatalogue,
 }: EnrolledCoursesProps) {
     const router = useRouter();
-
-    // ------------------------------------------------------------------
-    // Local state
-    // ------------------------------------------------------------------
 
     const [isAdding, setIsAdding] = useState(false);
     const [addForm, setAddForm] = useState<AddFormState>(emptyAddForm);
@@ -158,15 +216,13 @@ export default function EnrolledCourses({
         courseCatalogue === undefined,
     );
 
-    const [pendingRemoval, setPendingRemoval] =
-        useState<StudentCourse | null>(null);
+    const [pendingRemoval, setPendingRemoval] = useState<StudentCourse | null>(
+        null,
+    );
     const [removeBusy, setRemoveBusy] = useState(false);
     const [removeError, setRemoveError] = useState<string | null>(null);
 
-    // ------------------------------------------------------------------
     // Fetch course catalogue if the parent didn't provide one
-    // ------------------------------------------------------------------
-
     useEffect(() => {
         if (courseCatalogue !== undefined) {
             setCatalogue(courseCatalogue);
@@ -194,19 +250,13 @@ export default function EnrolledCourses({
         };
     }, [courseCatalogue]);
 
-    // ------------------------------------------------------------------
-    // IDs of courses this student is already in (to hide them from the picker)
-    // ------------------------------------------------------------------
-
+    // Hide already-enrolled courses from the picker
     const enrolledCourseIds = useMemo(() => {
         const ids = new Set<string>();
         for (const c of courses) {
             const cid = c.courseId;
-            if (typeof cid === "string") {
-                ids.add(cid);
-            } else if (cid && typeof cid === "object") {
-                ids.add(cid._id);
-            }
+            if (typeof cid === "string") ids.add(cid);
+            else if (cid && typeof cid === "object") ids.add(cid._id);
         }
         return ids;
     }, [courses]);
@@ -216,9 +266,7 @@ export default function EnrolledCourses({
         [catalogue, enrolledCourseIds],
     );
 
-    // ------------------------------------------------------------------
-    // Add flow
-    // ------------------------------------------------------------------
+    // ------------------------------ Add flow ------------------------------
 
     const openAddForm = useCallback(() => {
         setAddForm(emptyAddForm);
@@ -293,9 +341,7 @@ export default function EnrolledCourses({
         }
     }
 
-    // ------------------------------------------------------------------
-    // Remove flow
-    // ------------------------------------------------------------------
+    // ----------------------------- Remove flow ----------------------------
 
     const requestRemove = useCallback((item: StudentCourse) => {
         setRemoveError(null);
@@ -316,9 +362,7 @@ export default function EnrolledCourses({
 
         try {
             await studentApi.removeEnrollment(studentId, pendingRemoval._id);
-
             setPendingRemoval(null);
-
             await refreshStudent();
         } catch (err: any) {
             setRemoveError(
@@ -331,96 +375,76 @@ export default function EnrolledCourses({
         }
     }
 
-    // ------------------------------------------------------------------
-    // Academic Record Navigation
-    // ------------------------------------------------------------------
+    // ------------------------------ Navigation ----------------------------
 
     const navigateToAcademicRecord = (courseItem: StudentCourse) => {
-        const courseIdString =
-            typeof courseItem.courseId === "object" && courseItem.courseId !== null
-                ? courseItem.courseId._id
-                : typeof courseItem.courseId === "string"
-                    ? courseItem.courseId
-                    : null;
-
-        if (courseIdString) {
+        if (resolveCourseIdString(courseItem)) {
             router.push(`/results/${studentId}`);
         }
     };
 
-    // ------------------------------------------------------------------
-    // Render
-    // ------------------------------------------------------------------
+    // ------------------------------- Render -------------------------------
 
     return (
         <>
-            <section className="mt-6 overflow-hidden rounded-sm border border-zinc-200 border-t-4 border-t-orange-400 bg-white shadow-sm dark:border-zinc-800 dark:border-t-orange-400 dark:bg-zinc-900">
+            <section className="mt-6 overflow-hidden rounded-sm border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
                 {/* Header */}
-                <header className="flex flex-col gap-4 bg-blue-950 px-6 py-5 text-white sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-orange-400 text-blue-950">
-                            <GraduationCap size={20} />
-                        </div>
+                <header className="flex items-center gap-3 border-b border-zinc-200 px-4 py-3 sm:px-6 sm:py-4 dark:border-zinc-800">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-blue-950 text-orange-400">
+                        <GraduationCap size={20} />
+                    </span>
 
-                        <div>
-                            <h2 className="text-base font-semibold leading-tight">
-                                Enrolled Courses
-                            </h2>
-                            <p className="text-xs text-blue-200">
-                                Active and completed program enrollments
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-3 self-start sm:self-auto">
-                        <span className="inline-flex items-center rounded-sm border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white">
+                    <div className="min-w-0 flex-1">
+                        <h2 className="truncate text-base font-semibold text-zinc-900 dark:text-white">
+                            Enrolled courses
+                        </h2>
+                        <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">
                             {courses.length}{" "}
-                            {courses.length === 1 ? "Course" : "Courses"}
-                        </span>
-
-                        {!isAdding && (
-                            <button
-                                type="button"
-                                onClick={openAddForm}
-                                className="inline-flex items-center gap-1.5 rounded-sm bg-orange-400 px-3.5 py-2 text-xs font-semibold text-blue-950 transition-colors hover:bg-orange-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-blue-950"
-                            >
-                                <Plus size={14} />
-                                Add Course
-                            </button>
-                        )}
+                            {courses.length === 1 ? "course" : "courses"}
+                            <span className="hidden sm:inline">
+                                {" "}
+                                · active and completed
+                            </span>
+                        </p>
                     </div>
+
+                    {!isAdding && (
+                        <button
+                            type="button"
+                            onClick={openAddForm}
+                            aria-label="Add course"
+                            className={`${btnPrimaryCls} shrink-0 !px-3 sm:!px-4`}
+                        >
+                            <Plus size={16} />
+                            <span className="hidden sm:inline">Add course</span>
+                        </button>
+                    )}
                 </header>
 
                 {/* Inline add form */}
                 {isAdding && (
-                    <div className="border-b border-zinc-200 bg-zinc-50 px-6 py-6 dark:border-zinc-800 dark:bg-zinc-950">
-                        <div className="mb-4 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <span
-                                    className="h-4 w-1 rounded-sm bg-orange-400"
-                                    aria-hidden="true"
-                                />
-                                <h3 className="text-xs font-semibold uppercase tracking-[0.15em] text-blue-950 dark:text-orange-400">
-                                    Add enrollment
-                                </h3>
-                            </div>
+                    <div className="border-b border-zinc-200 bg-zinc-50 p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-950">
+                        <div className="mb-4 flex items-center justify-between gap-3">
+                            <h3 className="border-l-4 border-orange-400 pl-3 text-sm font-semibold text-blue-950 dark:text-white">
+                                Add enrollment
+                            </h3>
 
                             <button
                                 type="button"
                                 onClick={closeAddForm}
                                 disabled={addBusy}
-                                className="rounded-sm p-1.5 text-zinc-500 transition-colors hover:bg-zinc-200 hover:text-zinc-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 disabled:opacity-40 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                                className="flex h-11 w-11 items-center justify-center rounded-sm text-zinc-500 transition-colors hover:bg-zinc-200 hover:text-zinc-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 disabled:opacity-40 sm:h-9 sm:w-9 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
                                 aria-label="Cancel add enrollment"
                             >
-                                <X size={16} />
+                                <X size={18} />
                             </button>
                         </div>
 
-                        <div className="grid gap-5 sm:grid-cols-2">
-                            {/* Course picker */}
+                        <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
                             <div className="sm:col-span-2">
                                 <label className={labelCls}>
-                                    Course <span className="text-red-500">*</span>
+                                    Course{" "}
+                                    <span className="text-red-500">*</span>
                                 </label>
                                 <SelectCourse
                                     value={addForm.courseId}
@@ -435,7 +459,6 @@ export default function EnrolledCourses({
                                 />
                             </div>
 
-                            {/* Admission date */}
                             <div>
                                 <label className={labelCls}>
                                     Date of admission{" "}
@@ -452,11 +475,10 @@ export default function EnrolledCourses({
                                 />
                             </div>
 
-                            {/* Completion date (optional) */}
                             <div>
                                 <label className={labelCls}>
                                     Date of completion{" "}
-                                    <span className="font-normal normal-case text-zinc-500 dark:text-zinc-400">
+                                    <span className="font-normal text-zinc-500 dark:text-zinc-400">
                                         (optional)
                                     </span>
                                 </label>
@@ -469,7 +491,9 @@ export default function EnrolledCourses({
                                     disabled={addBusy}
                                     fromYear={
                                         addForm.dateOfAdmission
-                                            ? new Date(addForm.dateOfAdmission).getFullYear()
+                                            ? new Date(
+                                                addForm.dateOfAdmission,
+                                            ).getFullYear()
                                             : undefined
                                     }
                                 />
@@ -485,12 +509,13 @@ export default function EnrolledCourses({
                             </div>
                         )}
 
-                        <div className="mt-5 flex justify-end gap-2">
+                        {/* Stacked full-width on phones, right-aligned from sm */}
+                        <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                             <button
                                 type="button"
                                 onClick={closeAddForm}
                                 disabled={addBusy}
-                                className={btnSecondaryCls}
+                                className={`${btnSecondaryCls} w-full sm:w-auto`}
                             >
                                 Cancel
                             </button>
@@ -499,7 +524,7 @@ export default function EnrolledCourses({
                                 type="button"
                                 onClick={submitAdd}
                                 disabled={addBusy}
-                                className={btnPrimaryCls}
+                                className={`${btnPrimaryCls} w-full sm:w-auto`}
                             >
                                 {addBusy && (
                                     <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -512,16 +537,16 @@ export default function EnrolledCourses({
 
                 {/* Body */}
                 {courses.length === 0 ? (
-                    <div className="m-6 flex flex-col items-center gap-3 rounded-sm border border-dashed border-zinc-300 px-6 py-12 text-center dark:border-zinc-700">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-sm bg-blue-950 text-orange-400">
+                    <div className="m-4 flex flex-col items-center gap-3 rounded-sm border border-dashed border-zinc-300 px-4 py-10 text-center sm:m-6 sm:py-12 dark:border-zinc-700">
+                        <span className="flex h-12 w-12 items-center justify-center rounded-sm bg-blue-950 text-orange-400">
                             <BookOpen size={22} />
-                        </div>
+                        </span>
 
                         <div>
                             <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                                 No enrolled courses
                             </p>
-                            <p className="mt-0.5 text-xs text-zinc-600 dark:text-zinc-400">
+                            <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
                                 Enrol this student in a course to see it here.
                             </p>
                         </div>
@@ -530,9 +555,9 @@ export default function EnrolledCourses({
                             <button
                                 type="button"
                                 onClick={openAddForm}
-                                className={btnPrimaryCls}
+                                className={`${btnPrimaryCls} w-full max-w-xs sm:w-auto`}
                             >
-                                <Plus size={14} />
+                                <Plus size={16} />
                                 Add first course
                             </button>
                         )}
@@ -545,111 +570,105 @@ export default function EnrolledCourses({
                             const completed = Boolean(
                                 courseItem.dateOfCompletion,
                             );
-
                             const courseIdString =
-                                typeof courseItem.courseId === "object" && courseItem.courseId !== null
-                                    ? courseItem.courseId._id
-                                    : typeof courseItem.courseId === "string"
-                                        ? courseItem.courseId
-                                        : null;
+                                resolveCourseIdString(courseItem);
 
                             return (
                                 <li
                                     key={courseItem._id || index}
-                                    onClick={() => navigateToAcademicRecord(courseItem)}
-                                    className="group grid cursor-pointer grid-cols-1 gap-5 border-l-4 border-l-orange-400 px-6 py-6 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/40 lg:grid-cols-[1fr_auto] lg:items-center lg:gap-8"
+                                    onClick={() =>
+                                        navigateToAcademicRecord(courseItem)
+                                    }
+                                    className={`group flex flex-col gap-4 border-l-4 px-4 py-4 transition-colors hover:bg-zinc-50 sm:px-6 sm:py-5 lg:flex-row lg:items-center lg:gap-8 dark:hover:bg-zinc-800/40 ${completed
+                                            ? "border-l-emerald-500"
+                                            : "border-l-orange-400"
+                                        } ${courseIdString ? "cursor-pointer" : ""}`}
                                 >
-                                    {/* Identity + key facts */}
-                                    <div className="min-w-0 space-y-4">
-                                        <div className="space-y-2">
-                                            <div className="flex flex-wrap items-center gap-2">
-                                                <span className="inline-flex items-center rounded-sm bg-blue-950 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-orange-400">
-                                                    {display.courseCode || "Course"}
-                                                </span>
+                                    {/* Identity + facts */}
+                                    <div className="min-w-0 flex-1 space-y-3">
+                                        <div className="flex flex-wrap items-center gap-1.5">
+                                            <span className="inline-flex items-center rounded-sm bg-blue-950 px-2 py-0.5 font-mono text-xs font-semibold text-orange-400">
+                                                {display.courseCode || "Course"}
+                                            </span>
 
-                                                {completed ? (
-                                                    <span className="inline-flex items-center rounded-sm border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
-                                                        Completed
-                                                    </span>
-                                                ) : (
-                                                    <span className="inline-flex items-center rounded-sm border border-orange-400/50 bg-orange-400/15 px-2 py-0.5 text-[11px] font-semibold text-orange-700 dark:text-orange-300">
-                                                        Ongoing
-                                                    </span>
-                                                )}
+                                            {completed ? (
+                                                <Pill className="border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+                                                    Completed
+                                                </Pill>
+                                            ) : (
+                                                <Pill className="border-orange-400/50 bg-orange-400/15 text-orange-700 dark:text-orange-300">
+                                                    Ongoing
+                                                </Pill>
+                                            )}
 
-                                                {display.resolvedLocally && (
-                                                    <span
-                                                        title="Inferred via admission number resolver"
-                                                        className="inline-flex items-center gap-1 rounded-sm border border-amber-400/40 bg-amber-400/10 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:text-amber-300"
-                                                    >
-                                                        <Sparkles size={10} />
-                                                        Resolved
-                                                    </span>
-                                                )}
-                                            </div>
-
-                                            <h3 className="text-lg font-semibold leading-snug text-blue-950 transition-colors group-hover:text-orange-500 dark:text-white dark:group-hover:text-orange-400">
-                                                {display.courseName}
-                                            </h3>
+                                            {display.resolvedLocally && (
+                                                <Pill
+                                                    title="Inferred via admission number resolver"
+                                                    className="border-amber-400/40 bg-amber-400/10 text-amber-700 dark:text-amber-300"
+                                                >
+                                                    <Sparkles size={11} />
+                                                    Resolved
+                                                </Pill>
+                                            )}
                                         </div>
 
-                                        <div className="flex items-center gap-3 rounded-sm border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900/60">
-                                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-blue-950/10 text-blue-950 dark:bg-orange-400/10 dark:text-orange-400">
-                                                <Hash className="h-4 w-4" />
-                                            </div>
-                                            <div className="min-w-0 flex-1">
-                                                <p className="text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                                                    ADM No.
-                                                </p>
-                                                <p className="mt-0.5 truncate font-mono text-sm font-semibold text-blue-950 dark:text-orange-400">
-                                                    {courseItem.admissionNumber || "N/A"}
-                                                </p>
-                                            </div>
-                                        </div>
+                                        <h3 className="text-base font-semibold leading-snug text-blue-950 transition-colors group-hover:text-orange-600 sm:text-lg dark:text-white dark:group-hover:text-orange-400">
+                                            {display.courseName}
+                                        </h3>
 
-                                        <div className="grid gap-3 sm:grid-cols-2">
-                                            <DateChip
+                                        <div className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3">
+                                            <Fact
+                                                icon={Hash}
+                                                label="Adm. no."
+                                                value={
+                                                    courseItem.admissionNumber ||
+                                                    "N/A"
+                                                }
+                                                mono
+                                                className="col-span-2 sm:col-span-1"
+                                            />
+                                            <Fact
+                                                icon={CalendarDays}
                                                 label="Admitted"
                                                 value={formatDate(
                                                     courseItem.dateOfAdmission,
                                                 )}
-                                                icon={CalendarDays}
                                             />
-                                            {completed ? (
-                                                <DateChip
-                                                    label="Completed"
-                                                    value={formatDate(
-                                                        courseItem.dateOfCompletion!,
-                                                    )}
-                                                    tone="success"
-                                                    icon={CalendarCheck}
-                                                />
-                                            ) : (
-                                                <DateChip
-                                                    label="Completed"
-                                                    value="Not yet completed"
-                                                    tone="muted"
-                                                    icon={CalendarCheck}
-                                                />
-                                            )}
+                                            <Fact
+                                                icon={CalendarCheck}
+                                                label="Completed"
+                                                value={
+                                                    completed
+                                                        ? formatDate(
+                                                            courseItem.dateOfCompletion!,
+                                                        )
+                                                        : "Not yet"
+                                                }
+                                                muted={!completed}
+                                            />
                                         </div>
                                     </div>
 
-                                    {/* Actions */}
-                                    <RequireRoleInline roles={["admin", "registrar"]}>
-                                        <div className="flex items-center gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-800 lg:flex-col lg:items-stretch lg:border-t-0 lg:pt-0">
+                                    {/* Actions: primary full-width, then edit/remove side by side on phones;
+                                        a fixed-width column from lg */}
+                                    <RequireRoleInline
+                                        roles={["admin", "registrar"]}
+                                    >
+                                        <div className="grid grid-cols-2 gap-2 border-t border-zinc-100 pt-4 lg:w-48 lg:shrink-0 lg:grid-cols-1 lg:border-t-0 lg:pt-0 dark:border-zinc-800">
                                             <button
                                                 type="button"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    navigateToAcademicRecord(courseItem);
+                                                    navigateToAcademicRecord(
+                                                        courseItem,
+                                                    );
                                                 }}
                                                 disabled={!courseIdString}
                                                 title="View student academic record and units"
-                                                className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm bg-blue-950 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-orange-400 dark:text-blue-950 dark:hover:bg-orange-300 lg:flex-none"
+                                                className={`${btnPrimaryCls} col-span-2 lg:col-span-1`}
                                             >
-                                                <FileText size={13} />
-                                                Academic Record
+                                                <FileText size={15} />
+                                                Academic record
                                             </button>
 
                                             <button
@@ -657,7 +676,6 @@ export default function EnrolledCourses({
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     if (!courseItem._id) return;
-
                                                     router.push(
                                                         `/students/${studentId}/editEnrollment?courseId=${encodeURIComponent(
                                                             courseItem._id,
@@ -665,10 +683,10 @@ export default function EnrolledCourses({
                                                     );
                                                 }}
                                                 disabled={!canModify}
-                                                className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm border border-blue-950 px-4 py-2 text-xs font-semibold text-blue-950 transition-colors hover:bg-blue-950 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 disabled:cursor-not-allowed disabled:opacity-40 dark:border-orange-400 dark:text-orange-400 dark:hover:bg-orange-400 dark:hover:text-blue-950 lg:flex-none"
+                                                className={btnOutlineCls}
                                             >
-                                                <Pencil size={13} />
-                                                Edit enrollment
+                                                <Pencil size={15} />
+                                                Edit
                                             </button>
 
                                             <button
@@ -683,9 +701,9 @@ export default function EnrolledCourses({
                                                         ? "Remove this enrollment"
                                                         : "Cannot remove — enrollment has no id"
                                                 }
-                                                className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm border border-red-300 px-4 py-2 text-xs font-semibold text-red-600 transition-colors hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 disabled:cursor-not-allowed disabled:opacity-40 dark:border-red-900/60 dark:text-red-400 dark:hover:bg-red-950/40 lg:flex-none"
+                                                className={btnDangerCls}
                                             >
-                                                <Trash2 size={13} />
+                                                <Trash2 size={15} />
                                                 Remove
                                             </button>
                                         </div>
@@ -717,7 +735,7 @@ export default function EnrolledCourses({
                                     <strong className="text-zinc-900 dark:text-white">
                                         {d.courseName}
                                     </strong>{" "}
-                                    (ADM No.{" "}
+                                    (Adm. no.{" "}
                                     <span className="font-mono">
                                         {pendingRemoval.admissionNumber}
                                     </span>
