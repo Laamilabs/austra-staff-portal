@@ -276,7 +276,7 @@ function StudentUnitsSheetPageInner() {
 
     return (
         <main className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-            <div className="mx-auto w-full max-w-full space-y-4 px-3 pb-28 pt-4 sm:px-6 lg:px-8 lg:pt-6 xl:pb-10">
+            <div className="mx-auto w-full max-w-full space-y-4 pb-28 pt-4 sm:px-6 lg:px-8 lg:pt-6 xl:pb-10">
                 {/* NAV */}
                 <nav
                     aria-label="Page navigation"

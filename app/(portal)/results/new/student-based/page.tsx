@@ -383,7 +383,7 @@ export default function StudentBasedResultsPage() {
 
     return (
         <main className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-            <div className="mx-auto max-w-full space-y-5 px-4 py-6 sm:px-6 lg:py-8">
+            <div className="mx-auto max-w-full space-y-5 py-6 sm:px-6 lg:py-8">
                 <Link
                     href="/results"
                     className="inline-flex items-center gap-2 text-sm font-medium text-zinc-600 transition-colors hover:text-blue-950 dark:text-zinc-400 dark:hover:text-orange-400"
