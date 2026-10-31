@@ -28,6 +28,7 @@ export default function PortalShell({ children }: PortalShellProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const [hovered, setHovered] = useState(false);
   const [backupStatus, setBackupStatus] = useState<BackupStatus>("idle");
   const [backupError, setBackupError] = useState("");
 
@@ -66,7 +67,6 @@ export default function PortalShell({ children }: PortalShellProps) {
     setBackupError("");
   };
 
-
   // Always start expanded on desktop and collapsed on mobile.
   useEffect(() => {
     if (window.innerWidth >= 1024) {
@@ -77,7 +77,6 @@ export default function PortalShell({ children }: PortalShellProps) {
 
     setHydrated(true);
   }, []);
-
 
   // Remember the choice. Waits for hydration so the default never overwrites it.
   useEffect(() => {
@@ -100,6 +99,22 @@ export default function PortalShell({ children }: PortalShellProps) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+
+  /* ---------------- Hover-to-expand (rail → overlay) ---------------- */
+
+  // True only while the user is peeking at the rail: the sidebar visually
+  // expands, but the content column does NOT shift (no layout jump).
+  const hoverExpand = collapsed && hovered && !mobileOpen;
+
+  // What the sidebar itself should render. The persistent `collapsed` state
+  // is still what drives the content padding below.
+  const sidebarCollapsed = collapsed && !hoverExpand;
+
+  // If a mobile drawer opens while the pointer happens to be hovering,
+  // don't leave a stale hover flag behind.
+  useEffect(() => {
+    if (mobileOpen) setHovered(false);
+  }, [mobileOpen]);
 
   return (
     <div className="relative min-h-screen bg-zinc-100 text-zinc-900 selection:bg-orange-400/20 selection:text-orange-600 dark:bg-[#050F20] dark:text-zinc-100 dark:selection:text-orange-400">
@@ -142,12 +157,25 @@ export default function PortalShell({ children }: PortalShellProps) {
         />
       </div>
 
-      <PortalSidebar
-        collapsed={collapsed}
-        setCollapsed={setCollapsed}
-        mobileOpen={mobileOpen}
-        setMobileOpen={setMobileOpen}
-      />
+      {/*
+        Hover zone. `display: contents` generates no box, so it can't disturb
+        layout; React still fires onMouseEnter/Leave on it via bubbling from
+        the sidebar's <aside>. We only pass the *visual* collapsed flag to the
+        sidebar, so on hover it expands as an overlay while the content column
+        padding below keeps using the persistent `collapsed` state.
+      */}
+      <div
+        className="contents"
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
+        <PortalSidebar
+          collapsed={sidebarCollapsed}
+          setCollapsed={setCollapsed}
+          mobileOpen={mobileOpen}
+          setMobileOpen={setMobileOpen}
+        />
+      </div>
 
       <BackupModal
         status={backupStatus}
@@ -156,7 +184,9 @@ export default function PortalShell({ children }: PortalShellProps) {
         onClose={closeBackupModal}
       />
 
-      {/* Content column: follows the sidebar width (64px rail / 256px full) */}
+      {/* Content column: follows the *persistent* collapsed width only
+          (64px rail / 256px full) — never the hover peek, so hovering the
+          rail never shifts page content. */}
       <div
         className={`relative z-10 flex min-h-screen flex-col pt-16 transition-[padding] duration-300 ease-in-out lg:pt-0 ${collapsed ? "lg:pl-16" : "lg:pl-64"
           }`}
