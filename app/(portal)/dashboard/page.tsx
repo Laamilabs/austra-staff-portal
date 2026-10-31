@@ -142,10 +142,10 @@ export default function DashboardPage() {
     const greeting = !now
         ? "Welcome back"
         : now.getHours() < 12
-          ? "Good morning"
-          : now.getHours() < 17
-            ? "Good afternoon"
-            : "Good evening";
+            ? "Good morning"
+            : now.getHours() < 17
+                ? "Good afternoon"
+                : "Good evening";
 
     // ---- Derived metrics ---------------------------------------------------
 
@@ -156,7 +156,7 @@ export default function DashboardPage() {
         if (!studentStats || studentStats.totalEnrollments <= 0) return null;
         return Math.round(
             (studentStats.activeEnrollments / studentStats.totalEnrollments) *
-                100,
+            100,
         );
     }, [studentStats]);
 
@@ -165,7 +165,7 @@ export default function DashboardPage() {
         return Math.round(
             (studentStats.completedEnrollments /
                 studentStats.totalEnrollments) *
-                100,
+            100,
         );
     }, [studentStats]);
 
@@ -403,8 +403,8 @@ export default function DashboardPage() {
                         {/* ---------------- Mobile layout ---------------- */}
                         <div className="md:hidden">
                             <div className="flex flex-col items-center gap-3 p-4 sm:gap-4 sm:p-5">
-                                {/* Centered square portrait */}
-                                <div className="aspect-square h-40 w-40 overflow-hidden rounded-sm shadow-xl shadow-black/40 ring-[3px] ring-orange-300/70 ring-offset-2 ring-offset-[#0B1E3D] sm:h-48 sm:w-48">
+                                {/* Full-width portrait */}
+                                <div className="aspect-square w-full overflow-hidden rounded-sm shadow-xl shadow-black/40 ring-[3px] ring-orange-300/70 ring-offset-2 ring-offset-[#0B1E3D]">
                                     <HeroAvatar
                                         src={profileImage}
                                         name={displayName}
@@ -433,7 +433,7 @@ export default function DashboardPage() {
                                                 </span>
                                             )}
                                         </p>
-                                        <h1 className="mt-0.5 break-words text-2xl font-semibold leading-tight tracking-tight">
+                                        <h1 className="mt-0.5 wrap-break-word text-2xl font-semibold leading-tight tracking-tight">
                                             {isAuthenticated
                                                 ? displayName
                                                 : "Welcome"}
