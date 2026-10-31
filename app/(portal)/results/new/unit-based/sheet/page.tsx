@@ -23,6 +23,7 @@ import {
     Result,
     UpdateResultDto,
     resultApi,
+    marksToGrade,
 } from "@/app/types/results";
 
 /* -------------------------------------------------------------------------- */
@@ -870,7 +871,7 @@ function Sheet({ unitId, rows }: { unitId: string; rows: StudentRow[] }) {
                                                 key={col.key}
                                                 className="border-l border-zinc-100 px-2 py-2 text-center dark:border-zinc-800"
                                             >
-                                                <div className="relative inline-flex items-center">
+                                                <div className="relative inline-block">
                                                     <input
                                                         type="text"
                                                         inputMode="decimal"
@@ -889,6 +890,11 @@ function Sheet({ unitId, rows }: { unitId: string; rows: StudentRow[] }) {
                                                         <CheckCircle2 className="pointer-events-none absolute -right-1 -top-1 h-3.5 w-3.5 text-emerald-500" />
                                                     )}
                                                 </div>
+                                                {raw !== "" && Number.isFinite(Number(raw)) && Number(raw) >= 0 && Number(raw) <= 100 && (
+                                                    <span className="mt-1 block max-w-24 text-[10px] leading-tight text-zinc-500 dark:text-zinc-400">
+                                                        {marksToGrade(Number(raw))}
+                                                    </span>
+                                                )}
                                             </td>
                                         );
                                     })}

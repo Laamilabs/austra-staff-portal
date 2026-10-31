@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+    memo,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -26,6 +33,7 @@ import {
     AssessmentType,
     Result,
     ResultStatus,
+    marksToGrade,
     resultApi,
 } from "@/app/types/results";
 import { courseApi, type Course } from "@/app/types/courses";
@@ -109,11 +117,11 @@ function hasCourseCode(code: string): boolean {
 
 function GradeBadge({ grade }: { grade: string }) {
     const tone =
-        grade === "Distinction"
+        grade.includes("Distinction")
             ? "bg-emerald-500/10 text-emerald-700 ring-emerald-500/25 dark:text-emerald-300"
-            : grade === "Credit"
+            : grade.includes("Credit")
                 ? "bg-sky-500/10 text-sky-700 ring-sky-500/25 dark:text-sky-300"
-                : grade === "Pass"
+                : grade.includes("Pass")
                     ? "bg-amber-400/10 text-amber-700 ring-amber-400/30 dark:text-amber-300"
                     : grade === "Incomplete"
                         ? "bg-zinc-500/10 text-zinc-600 ring-zinc-500/20 dark:text-zinc-300"
@@ -129,14 +137,14 @@ function GradeBadge({ grade }: { grade: string }) {
 }
 
 function ScorePill({ score }: { score: number }) {
-    const tone =
-        score >= 70
-            ? "bg-emerald-500/10 text-emerald-700 ring-emerald-500/25 dark:text-emerald-300"
-            : score >= 60
-                ? "bg-sky-500/10 text-sky-700 ring-sky-500/25 dark:text-sky-300"
-                : score >= 40
-                    ? "bg-amber-400/10 text-amber-700 ring-amber-400/30 dark:text-amber-300"
-                    : "bg-red-500/10 text-red-700 ring-red-500/25 dark:text-red-300";
+    const grade = marksToGrade(score);
+    const tone = grade.includes("Distinction")
+        ? "bg-emerald-500/10 text-emerald-700 ring-emerald-500/25 dark:text-emerald-300"
+        : grade.includes("Credit")
+            ? "bg-sky-500/10 text-sky-700 ring-sky-500/25 dark:text-sky-300"
+            : grade.includes("Pass")
+                ? "bg-amber-400/10 text-amber-700 ring-amber-400/30 dark:text-amber-300"
+                : "bg-red-500/10 text-red-700 ring-red-500/25 dark:text-red-300";
 
     return (
         <span
@@ -159,9 +167,6 @@ function IncompletePill() {
 }
 
 function CourseBadge({ code }: { code: string }) {
-    // The `aggregateByStudent` helper returns "—" when a unit has no
-    // resolvable course. Render that as a muted placeholder instead of
-    // a styled code pill.
     if (!hasCourseCode(code)) {
         return (
             <span
@@ -333,7 +338,6 @@ export default function ResultsPage() {
                     courseName = c.name ?? courseName;
                 }
             } else if (u.courseId) {
-                // Populated Course on the unit response.
                 const c = u.courseId;
                 courseId = c._id;
                 courseCode = c.courseCode ?? courseCode;
@@ -348,7 +352,10 @@ export default function ResultsPage() {
         return (unitId: string) => unitToCourse.get(unitId) ?? null;
     }, [units, courses]);
 
-    const { students, rows } = useMemo(() => {
+    // Single pass: filter → aggregate → flatten → sort → stats.
+    // Keeping this in one memo means stats can never go stale relative to
+    // what's actually rendered in the body.
+    const { students, rows, stats } = useMemo(() => {
         const query = searchQuery.toLowerCase().trim();
 
         const filtered = results.filter((r) => {
@@ -413,7 +420,28 @@ export default function ResultsPage() {
             return sortOrder === "asc" ? cmp : -cmp;
         });
 
-        return { students: aggregates, rows: flat };
+        const allCourses = aggregates.flatMap((s) => s.courses);
+        const completeCourses = allCourses.filter((c) => c.isComplete);
+        const avg =
+            completeCourses.length === 0
+                ? 0
+                : completeCourses.reduce((s, c) => s + c.totalScore, 0) /
+                completeCourses.length;
+
+        return {
+            students: aggregates,
+            rows: flat,
+            stats: {
+                totalStudents: aggregates.length,
+                // Reflect the current filtered view, not the entire DB.
+                totalResults: filtered.length,
+                avg: Math.round(avg * 10) / 10,
+                distinctions: completeCourses.filter((c) =>
+                    c.grade.includes("Distinction"),
+                ).length,
+                incomplete: allCourses.filter((c) => !c.isComplete).length,
+            },
+        };
     }, [
         results,
         searchQuery,
@@ -424,58 +452,43 @@ export default function ResultsPage() {
         unitCourseLookup,
     ]);
 
-    const stats = useMemo(() => {
-        const totalStudents = students.length;
-        const totalResults = results.length;
-
-        const allCourses = students.flatMap((s) => s.courses);
-        const completeCourses = allCourses.filter((c) => c.isComplete);
-
-        const avg =
-            completeCourses.length === 0
-                ? 0
-                : completeCourses.reduce((s, c) => s + c.totalScore, 0) /
-                completeCourses.length;
-
-        const distinctions = completeCourses.filter(
-            (c) => c.grade === "Distinction",
-        ).length;
-
-        const incomplete = allCourses.filter((c) => !c.isComplete).length;
-
-        return {
-            totalStudents,
-            totalResults,
-            avg: Math.round(avg * 10) / 10,
-            distinctions,
-            incomplete,
-        };
-    }, [students, results]);
-
     const hasFilters =
         searchQuery.trim() !== "" ||
         assessmentFilter !== "ALL" ||
         statusFilter !== "ALL";
 
-    const clearFilters = () => {
+    /* ------------------------------ Actions ---------------------------- */
+
+    const clearFilters = useCallback(() => {
         setSearchQuery("");
         setAssessmentFilter("ALL");
         setStatusFilter("ALL");
-    };
+    }, []);
 
-    const toggleSortOrder = () =>
+    const toggleSortOrder = useCallback(() => {
         setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+    }, []);
 
-    const changeSortField = (field: SortField) => {
+    const changeSortField = useCallback((field: SortField) => {
         setSortBy(field);
         setSortOrder(defaultOrder(field));
-    };
+    }, []);
 
     /** Column header click: toggle direction on the active column, else switch to it. */
-    const handleHeaderSort = (field: SortField) => {
-        if (sortBy === field) toggleSortOrder();
-        else changeSortField(field);
-    };
+    const handleHeaderSort = useCallback(
+        (field: SortField) => {
+            if (sortBy === field) toggleSortOrder();
+            else changeSortField(field);
+        },
+        [sortBy, toggleSortOrder, changeSortField],
+    );
+
+    const handleRowClick = useCallback(
+        (r: CourseRow) => {
+            router.push(`/results/${r.student.studentId}`);
+        },
+        [router],
+    );
 
     const assessmentLabel =
         assessmentFilter === AssessmentType.CAT
@@ -688,7 +701,9 @@ export default function ResultsPage() {
                             <select
                                 value={statusFilter}
                                 onChange={(e) =>
-                                    setStatusFilter(e.target.value as StatusFilter)
+                                    setStatusFilter(
+                                        e.target.value as StatusFilter,
+                                    )
                                 }
                                 aria-label="Filter by status"
                                 className={`${controlCls} pl-9 pr-2 ${FOCUS_RING}`}
@@ -717,17 +732,23 @@ export default function ResultsPage() {
                             }
                             className={`${controlCls} min-w-0 flex-1 px-2.5 font-medium lg:w-40 lg:flex-none ${FOCUS_RING}`}
                         >
-                            {(Object.keys(SORT_LABELS) as SortField[]).map((f) => (
-                                <option key={f} value={f}>
-                                    {SORT_LABELS[f]}
-                                </option>
-                            ))}
+                            {(Object.keys(SORT_LABELS) as SortField[]).map(
+                                (f) => (
+                                    <option key={f} value={f}>
+                                        {SORT_LABELS[f]}
+                                    </option>
+                                ),
+                            )}
                         </select>
 
                         <button
                             type="button"
                             onClick={toggleSortOrder}
-                            title={sortOrder === "asc" ? "Ascending" : "Descending"}
+                            title={
+                                sortOrder === "asc"
+                                    ? "Ascending"
+                                    : "Descending"
+                            }
                             aria-label={
                                 sortOrder === "asc"
                                     ? "Ascending. Switch to descending"
@@ -814,10 +835,19 @@ export default function ResultsPage() {
                         {students.length === 1 ? "student" : "students"}
                         {" · "}
                         {rows.length}{" "}
-                        {rows.length === 1 ? "course aggregate" : "course aggregates"}
-                        {" · "}
-                        {results.length}{" "}
-                        {results.length === 1 ? "result" : "results"} recorded
+                        {rows.length === 1
+                            ? "course aggregate"
+                            : "course aggregates"}
+                        {/* Only show the total "recorded" count when it
+                            matches the visible view — i.e. no filters. */}
+                        {!hasFilters && (
+                            <>
+                                {" · "}
+                                {results.length}{" "}
+                                {results.length === 1 ? "result" : "results"}{" "}
+                                recorded
+                            </>
+                        )}
                     </p>
 
                     {rows.length === 0 ? (
@@ -837,13 +867,17 @@ export default function ResultsPage() {
                                             href={`/results/${student.studentId}`}
                                             className={`flex items-center gap-3 px-3.5 py-3 transition-colors hover:bg-[#0B1E3D]/4 dark:hover:bg-white/6 ${FOCUS_RING} focus-visible:ring-inset`}
                                         >
-                                            <StudentAvatar name={student.studentName} />
+                                            <StudentAvatar
+                                                name={student.studentName}
+                                            />
                                             <span className="min-w-0 flex-1">
                                                 <span className="flex items-center gap-1.5">
                                                     <span className="truncate text-sm font-semibold text-[#0B1E3D] dark:text-white">
                                                         {student.studentName}
                                                     </span>
-                                                    <CourseBadge code={course.courseCode} />
+                                                    <CourseBadge
+                                                        code={course.courseCode}
+                                                    />
                                                 </span>
                                                 <span className="block truncate font-mono text-[11px] text-zinc-500 dark:text-zinc-400">
                                                     {student.admissionNumber} ·{" "}
@@ -855,26 +889,30 @@ export default function ResultsPage() {
                                             </span>
                                             <span className="flex shrink-0 flex-col items-end gap-1">
                                                 {course.isComplete ? (
-                                                    <ScorePill score={course.totalScore} />
+                                                    <ScorePill
+                                                        score={
+                                                            course.totalScore
+                                                        }
+                                                    />
                                                 ) : (
                                                     <IncompletePill />
                                                 )}
-                                                <GradeBadge grade={course.grade} />
+                                                <GradeBadge
+                                                    grade={course.grade}
+                                                />
                                             </span>
                                         </Link>
                                     </li>
                                 ))}
                             </ul>
 
-                            {/* Desktop: details table */}
+                            {/* Desktop: details table (memoized) */}
                             <ResultsTable
                                 rows={rows}
                                 sortBy={sortBy}
                                 sortOrder={sortOrder}
                                 onSort={handleHeaderSort}
-                                onRowClick={(r) =>
-                                    router.push(`/results/${r.student.studentId}`)
-                                }
+                                onRowClick={handleRowClick}
                             />
                         </>
                     )}
@@ -944,7 +982,11 @@ function SortableTh({
         <th
             scope="col"
             aria-sort={
-                active ? (sortOrder === "asc" ? "ascending" : "descending") : "none"
+                active
+                    ? sortOrder === "asc"
+                        ? "ascending"
+                        : "descending"
+                    : "none"
             }
             className="px-4 py-2"
         >
@@ -968,7 +1010,7 @@ function SortableTh({
     );
 }
 
-function ResultsTable({
+const ResultsTable = memo(function ResultsTable({
     rows,
     sortBy,
     sortOrder,
@@ -1045,7 +1087,6 @@ function ResultsTable({
                             className="group relative cursor-pointer transition-colors hover:bg-[#0B1E3D]/4 dark:hover:bg-white/6"
                         >
                             <td className="relative px-4 py-2.5">
-                                {/* Hover pill, same as the sidebar */}
                                 <span
                                     aria-hidden
                                     className="absolute left-0 top-1/2 h-4 w-0.75 origin-center -translate-y-1/2 scale-y-0 rounded-sm bg-orange-400 transition-transform duration-200 group-hover:scale-y-100 group-focus-within:scale-y-100"
@@ -1112,7 +1153,7 @@ function ResultsTable({
             </table>
         </div>
     );
-}
+});
 
 function Skeleton() {
     return (
@@ -1149,7 +1190,9 @@ function EmptyState({
                 <FileText className="h-6 w-6" />
             </span>
             <p className="mt-3 text-sm font-semibold text-[#0B1E3D] dark:text-white">
-                {hasResults ? "No course results match your filters" : "No results yet"}
+                {hasResults
+                    ? "No course results match your filters"
+                    : "No results yet"}
             </p>
             <p className="mx-auto mt-1 max-w-sm text-xs text-zinc-500 dark:text-zinc-400">
                 {hasResults

@@ -1,13 +1,16 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
     AlertCircle,
     ArrowLeft,
+    Award,
     BookOpen,
     CheckCircle2,
+    ChevronDown,
+    ChevronUp,
     ClipboardList,
     Layers,
     Loader2,
@@ -20,13 +23,16 @@ import {
 import { Student, studentApi } from "@/app/types/students";
 import { Unit, unitApi } from "@/app/types/units";
 import { Course, courseApi } from "@/app/types/courses";
-import { Result, resultApi } from "@/app/types/results";
+import { Result, marksToGrade, resultApi } from "@/app/types/results";
 
 import {
     DEFAULT_TEMPLATE,
+    MarkedEntry,
     Template,
+    computeUnitScore,
     extractId,
     extractStudentId,
+    gradeTone,
     studentFullName,
     templateSummary,
 } from "./utils";
@@ -55,6 +61,9 @@ function StudentUnitsSheetPageInner() {
     const [resultsByUnit, setResultsByUnit] = useState<
         Record<string, Result[]>
     >({});
+    const [draftByUnit, setDraftByUnit] = useState<
+        Record<string, MarkedEntry[]>
+    >({});
     const [admissionNumber, setAdmissionNumber] = useState("");
 
     const [loading, setLoading] = useState(true);
@@ -66,9 +75,20 @@ function StudentUnitsSheetPageInner() {
         useState<Template>(DEFAULT_TEMPLATE);
     const [appliedTemplate, setAppliedTemplate] =
         useState<Template>(DEFAULT_TEMPLATE);
-    // Increments each time the user clicks "Apply". Panels watch this value.
     const [templateVersion, setTemplateVersion] = useState(0);
     const [applyFeedback, setApplyFeedback] = useState<string | null>(null);
+
+    /* -------------------- Expand / collapse all state ------------------ */
+
+    // Panels start expanded (`defaultExpanded` in UnitPanel). This pair
+    // lets the header button push a state change to every panel at once.
+    const [expandAll, setExpandAll] = useState(true);
+    const [expandVersion, setExpandVersion] = useState(0);
+
+    const toggleExpandAll = () => {
+        setExpandAll((prev) => !prev);
+        setExpandVersion((v) => v + 1);
+    };
 
     useEffect(() => {
         if (!applyFeedback) return;
@@ -123,14 +143,11 @@ function StudentUnitsSheetPageInner() {
                     );
                 setUnits(courseUnits);
 
-                // Extract the admission number for this specific enrollment.
                 const enrollment = s.courses.find(
                     (c) => extractId(c.courseId) === courseId,
                 );
                 setAdmissionNumber(enrollment?.admissionNumber ?? "");
 
-                // Load existing results per unit in parallel, filtered to
-                // this student.
                 const perUnit = await Promise.all(
                     courseUnits.map(async (u) => {
                         try {
@@ -170,7 +187,43 @@ function StudentUnitsSheetPageInner() {
         };
     }, [studentId, courseId]);
 
-    const academicRecordHref = `/students/${studentId}/academic-record/${courseId}`;
+    /* --------------------------- Draft uplink -------------------------- */
+
+    const handleDraftChange = useCallback(
+        (unitId: string, drafts: MarkedEntry[]) => {
+            setDraftByUnit((prev) => ({ ...prev, [unitId]: drafts }));
+        },
+        [],
+    );
+
+    /* --------------------------- Grade preview ------------------------- */
+
+    const gradePreview = useMemo(() => {
+        const perUnit = units.map((u) => {
+            const entries =
+                draftByUnit[u._id] ?? resultsByUnit[u._id] ?? [];
+            return computeUnitScore(entries);
+        });
+
+        const complete = perUnit.filter((p) => p.complete);
+        const overallScore =
+            complete.length > 0
+                ? complete.reduce((s, p) => s + p.score, 0) /
+                complete.length
+                : 0;
+
+        return {
+            overallScore,
+            completeCount: complete.length,
+            incompleteCount: perUnit.length - complete.length,
+            totalCount: perUnit.length,
+            hasComplete: complete.length > 0,
+            grade:
+                complete.length > 0 ? marksToGrade(overallScore) : null,
+        };
+    }, [units, draftByUnit, resultsByUnit]);
+
+    const academicRecordHref = `/results/${studentId}`;
 
     /* ------------------------------- Render ---------------------------- */
 
@@ -273,14 +326,14 @@ function StudentUnitsSheetPageInner() {
                                 </h2>
                             </div>
                             <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                                Define a column set and apply it to every unit
-                                below.
+                                Default (2 CATs + Final) is auto-applied to
+                                every unit — adjust only if you need a
+                                different column set.
                             </span>
                         </header>
 
                         <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-end sm:justify-between">
                             <div className="flex flex-wrap items-end gap-4">
-                                {/* CAT count */}
                                 <div>
                                     <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                                         Number of CATs
@@ -307,7 +360,6 @@ function StudentUnitsSheetPageInner() {
                                     />
                                 </div>
 
-                                {/* Include Practical */}
                                 <label className="flex cursor-pointer items-center gap-2">
                                     <input
                                         type="checkbox"
@@ -315,8 +367,7 @@ function StudentUnitsSheetPageInner() {
                                         onChange={(e) =>
                                             setDraftTemplate((t) => ({
                                                 ...t,
-                                                hasPractical:
-                                                    e.target.checked,
+                                                hasPractical: e.target.checked,
                                             }))
                                         }
                                         className="h-4 w-4 cursor-pointer accent-[#082B66] dark:accent-orange-400"
@@ -326,7 +377,6 @@ function StudentUnitsSheetPageInner() {
                                     </span>
                                 </label>
 
-                                {/* Include Final Exam */}
                                 <label className="flex cursor-pointer items-center gap-2">
                                     <input
                                         type="checkbox"
@@ -334,8 +384,7 @@ function StudentUnitsSheetPageInner() {
                                         onChange={(e) =>
                                             setDraftTemplate((t) => ({
                                                 ...t,
-                                                hasFinalExam:
-                                                    e.target.checked,
+                                                hasFinalExam: e.target.checked,
                                             }))
                                         }
                                         className="h-4 w-4 cursor-pointer accent-[#082B66] dark:accent-orange-400"
@@ -349,14 +398,13 @@ function StudentUnitsSheetPageInner() {
                             <button
                                 type="button"
                                 onClick={applyTemplateToAll}
-                                className="inline-flex items-center gap-1.5 rounded-sm bg-[#082B66] px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-[#082B66]/90 dark:bg-orange-400 dark:text-zinc-900 dark:hover:bg-orange-400/90"
+                                className="inline-flex items-center gap-1.5 rounded-sm border border-zinc-200 bg-white px-3.5 py-2 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
                             >
                                 <Sparkles className="h-3.5 w-3.5" />
-                                Apply to All Units
+                                Re-apply to All Units
                             </button>
                         </div>
 
-                        {/* Preview + feedback */}
                         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-100 bg-zinc-50/60 px-5 py-3 dark:border-zinc-800 dark:bg-zinc-800/30">
                             <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
                                 <span className="font-semibold uppercase tracking-wider">
@@ -373,6 +421,94 @@ function StudentUnitsSheetPageInner() {
                                     {applyFeedback}
                                 </span>
                             )}
+                        </div>
+                    </section>
+                )}
+
+                {/* OVERALL GRADE PREVIEW — live summary only */}
+                {!loading && !error && units.length > 0 && (
+                    <section className="overflow-hidden rounded-sm border border-zinc-200 border-t-4 border-t-emerald-500 bg-white shadow-sm dark:border-zinc-800 dark:border-t-emerald-500 dark:bg-zinc-900">
+                        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-100 px-5 py-3 dark:border-zinc-800">
+                            <div className="flex items-center gap-3">
+                                <span className="flex h-6 w-6 items-center justify-center rounded-sm bg-emerald-600 text-[11px] font-bold text-white dark:bg-emerald-500 dark:text-zinc-900">
+                                    <Award className="h-3.5 w-3.5" />
+                                </span>
+                                <h2 className="text-sm font-bold text-[#082B66] dark:text-white">
+                                    Overall Grade Preview
+                                </h2>
+                            </div>
+                            <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                                Updates live · per-unit grades show on each
+                                unit below
+                            </span>
+                        </header>
+
+                        <div className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="flex flex-wrap items-center gap-6">
+                                <div>
+                                    <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                                        Overall Score
+                                    </p>
+                                    <p className="text-3xl font-bold leading-tight tabular-nums text-[#082B66] dark:text-white">
+                                        {gradePreview.hasComplete
+                                            ? `${gradePreview.overallScore.toFixed(1)}%`
+                                            : "—"}
+                                    </p>
+                                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                                        {gradePreview.completeCount} of{" "}
+                                        {gradePreview.totalCount} unit
+                                        {gradePreview.totalCount === 1
+                                            ? ""
+                                            : "s"}{" "}
+                                        graded
+                                    </p>
+                                </div>
+
+                                <div className="hidden h-12 w-px bg-zinc-200 dark:bg-zinc-700 sm:block" />
+
+                                <div>
+                                    <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                                        Projected Grade
+                                    </p>
+                                    {gradePreview.grade ? (
+                                        <span
+                                            className={`mt-1 inline-flex items-center rounded-sm px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${gradeTone(
+                                                gradePreview.grade,
+                                            )}`}
+                                        >
+                                            {gradePreview.grade}
+                                        </span>
+                                    ) : (
+                                        <span className="mt-1 inline-flex items-center rounded-sm bg-zinc-500/10 px-2.5 py-1 text-xs font-semibold text-zinc-500 ring-1 ring-inset ring-zinc-500/20 dark:text-zinc-400">
+                                            Not graded yet
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-2">
+                                {gradePreview.completeCount > 0 && (
+                                    <span className="inline-flex items-center gap-1.5 rounded-sm bg-emerald-500/10 px-2 py-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
+                                        <CheckCircle2 className="h-3 w-3" />
+                                        {gradePreview.completeCount} complete
+                                    </span>
+                                )}
+                                {gradePreview.incompleteCount > 0 && (
+                                    <span className="inline-flex items-center gap-1.5 rounded-sm bg-amber-400/10 px-2 py-1 text-[11px] font-semibold text-amber-700 dark:text-amber-400">
+                                        <AlertCircle className="h-3 w-3" />
+                                        {gradePreview.incompleteCount} pending
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="border-t border-zinc-100 bg-zinc-50/60 px-5 py-2 dark:border-zinc-800 dark:bg-zinc-800/30">
+                            <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                                Formula: avg(CATs + Practicals) × 30% + Final ×
+                                70%, averaged across units. A unit is graded
+                                once it has a final exam and at least one CAT
+                                or practical.
+                            </p>
                         </div>
                     </section>
                 )}
@@ -399,18 +535,44 @@ function StudentUnitsSheetPageInner() {
                     </div>
                 )}
 
-                {/* UNITS */}
+                {/* UNITS — all expanded by default, with global collapse */}
                 {!loading && !error && units.length > 0 && (
                     <div className="space-y-3">
-                        {units.map((u, idx) => (
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                                Units ({units.length})
+                            </h2>
+                            <button
+                                type="button"
+                                onClick={toggleExpandAll}
+                                className="inline-flex items-center gap-1.5 rounded-sm border border-zinc-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                            >
+                                {expandAll ? (
+                                    <>
+                                        <ChevronUp className="h-3 w-3" />
+                                        Collapse all
+                                    </>
+                                ) : (
+                                    <>
+                                        <ChevronDown className="h-3 w-3" />
+                                        Expand all
+                                    </>
+                                )}
+                            </button>
+                        </div>
+
+                        {units.map((u) => (
                             <UnitPanel
                                 key={u._id}
                                 unit={u}
                                 studentId={studentId}
                                 initialResults={resultsByUnit[u._id] ?? []}
-                                defaultExpanded={idx === 0}
+                                defaultExpanded={true}
                                 template={appliedTemplate}
                                 templateVersion={templateVersion}
+                                expandVersion={expandVersion}
+                                expandTo={expandAll}
+                                onDraftChange={handleDraftChange}
                             />
                         ))}
                     </div>

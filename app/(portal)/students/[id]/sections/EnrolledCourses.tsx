@@ -344,7 +344,7 @@ export default function EnrolledCourses({
                     : null;
 
         if (courseIdString) {
-            router.push(`/students/${studentId}/academic-record/${courseIdString}`);
+            router.push(`/results/${studentId}`);
         }
     };
 

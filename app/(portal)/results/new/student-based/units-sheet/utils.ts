@@ -1,4 +1,4 @@
-import { AssessmentType, Result } from "@/app/types/results";
+import { AssessmentType, Result, marksToGrade } from "@/app/types/results";
 import { Student } from "@/app/types/students";
 
 /* -------------------------------------------------------------------------- */
@@ -20,6 +20,13 @@ export interface ExistingCell {
     marks: number;
 }
 
+/** Minimal shape needed to compute a unit score (also satisfied by `Result`). */
+export interface MarkedEntry {
+    assessmentType: AssessmentType;
+    assessmentNumber?: number;
+    marks: number;
+}
+
 export interface Template {
     catCount: number;
     hasPractical: boolean;
@@ -31,6 +38,72 @@ export const DEFAULT_TEMPLATE: Template = {
     hasPractical: false,
     hasFinalExam: true,
 };
+
+/* -------------------------------------------------------------------------- */
+/* Grade helpers                                                              */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Compute a single unit's projected score (0–100).
+ * Continuous = average of all CATs + practicals × 30%.
+ * Final      = final exam mark × 70%.
+ */
+export function computeUnitScore(entries: MarkedEntry[]): {
+    complete: boolean;
+    score: number;
+    continuousAvg: number;
+    finalMark: number;
+    grade: string | null;
+} {
+    const valid = entries.filter(
+        (r) => typeof r.marks === "number" && !Number.isNaN(r.marks),
+    );
+    const cats = valid.filter((r) => r.assessmentType === AssessmentType.CAT);
+    const practicals = valid.filter(
+        (r) => r.assessmentType === AssessmentType.PRACTICAL,
+    );
+    const finals = valid.filter(
+        (r) => r.assessmentType === AssessmentType.FINAL_EXAM,
+    );
+    const continuous = [...cats, ...practicals];
+
+    if (continuous.length === 0 || finals.length === 0) {
+        return {
+            complete: false,
+            score: 0,
+            continuousAvg: 0,
+            finalMark: 0,
+            grade: null,
+        };
+    }
+
+    const continuousAvg =
+        continuous.reduce((s, r) => s + r.marks, 0) / continuous.length;
+    const finalMark = finals[0].marks;
+    const score = continuousAvg * 0.3 + finalMark * 0.7;
+    return {
+        complete: true,
+        score,
+        continuousAvg,
+        finalMark,
+        grade: marksToGrade(score),
+    };
+}
+
+/** Tailwind tone classes for a grade returned by `marksToGrade`. */
+export function gradeTone(grade: string | null): string {
+    if (!grade)
+        return "bg-zinc-500/10 text-zinc-600 ring-zinc-500/20 dark:text-zinc-300";
+    if (grade.includes("Distinction"))
+        return "bg-emerald-500/10 text-emerald-700 ring-emerald-500/25 dark:text-emerald-300";
+    if (grade.includes("Credit"))
+        return "bg-sky-500/10 text-sky-700 ring-sky-500/25 dark:text-sky-300";
+    if (grade.includes("Pass"))
+        return "bg-amber-400/10 text-amber-700 ring-amber-400/30 dark:text-amber-300";
+    if (grade.includes("Fail"))
+        return "bg-red-500/10 text-red-700 ring-red-500/25 dark:text-red-300";
+    return "bg-zinc-500/10 text-zinc-600 ring-zinc-500/20 dark:text-zinc-300";
+}
 
 /* -------------------------------------------------------------------------- */
 /* Helpers                                                                    */

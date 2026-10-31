@@ -331,13 +331,16 @@ export function formatAssessmentLabel(result: Result): string {
 }
 
 /**
- * Parse a marks value (0–100) into a Kenyan-style letter grade.
+ * Convert a percentage mark to the institution's seven-grade scale.
  *
  * Adjust the thresholds here if your institution uses a different scale.
  */
 export function marksToGrade(marks: number): string {
-    if (marks >= 70) return "Distinction";
-    if (marks >= 60) return "Credit";
-    if (marks >= 40) return "Pass";
-    return "Fail";
+    if (marks >= 80) return "Grade 1 (Distinction)";
+    if (marks >= 75) return "Grade 2 (Distinction)";
+    if (marks >= 70) return "Grade 3 (Credit)";
+    if (marks >= 60) return "Grade 4 (Credit)";
+    if (marks >= 50) return "Grade 5 (Pass)";
+    if (marks >= 40) return "Grade 6 (Pass)";
+    return "Grade 7 (Fail)";
 }

@@ -26,12 +26,15 @@ import {
     Column,
     ColumnKey,
     ExistingCell,
+    MarkedEntry,
     Template,
     applyTemplateToColumns,
     buildColumnsFromResults,
     buildExistingFromResults,
     columnKey,
     columnLabel,
+    computeUnitScore,
+    gradeTone,
     labelOf,
     sortColumns,
 } from "./utils";
@@ -44,9 +47,12 @@ export function UnitPanel({
     unit,
     studentId,
     initialResults,
-    defaultExpanded = false,
+    defaultExpanded = true,
     template,
     templateVersion,
+    expandVersion = 0,
+    expandTo = true,
+    onDraftChange,
 }: {
     unit: Unit;
     studentId: string;
@@ -54,10 +60,21 @@ export function UnitPanel({
     defaultExpanded?: boolean;
     template: Template;
     templateVersion: number;
+    /** Increment to push `expandTo` onto every panel at once. */
+    expandVersion?: number;
+    /** Target expanded state when `expandVersion` changes. */
+    expandTo?: boolean;
+    onDraftChange?: (unitId: string, drafts: MarkedEntry[]) => void;
 }) {
     const [expanded, setExpanded] = useState(defaultExpanded);
+
+    // Template-seeded initial columns: 2 CATs + Final by default. Users
+    // edit and save immediately — no "Apply" click needed.
     const [columns, setColumns] = useState<Column[]>(() =>
-        buildColumnsFromResults(initialResults),
+        applyTemplateToColumns(
+            template,
+            buildColumnsFromResults(initialResults),
+        ),
     );
     const [existing, setExisting] = useState<Record<ColumnKey, ExistingCell>>(
         () => buildExistingFromResults(initialResults),
@@ -82,11 +99,22 @@ export function UnitPanel({
         if (templateVersion === lastAppliedRef.current) return;
         lastAppliedRef.current = templateVersion;
         setColumns((prev) => applyTemplateToColumns(template, prev));
-        // Clear stale notifications after re-shaping columns.
         setSaveError(null);
         setSaveSuccess(null);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [templateVersion]);
+
+    /* ------------------------ Global expand/collapse ------------------- */
+
+    const lastExpandVersionRef = useRef(0);
+
+    useEffect(() => {
+        if (expandVersion === 0) return;
+        if (expandVersion === lastExpandVersionRef.current) return;
+        lastExpandVersionRef.current = expandVersion;
+        setExpanded(expandTo);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [expandVersion]);
 
     /* ----------------------------- Derived ---------------------------- */
 
@@ -121,6 +149,34 @@ export function UnitPanel({
         }
         return false;
     }, [columns, existing]);
+
+    /* ---------------------- Live score for this unit ------------------ */
+
+    const drafts = useMemo<MarkedEntry[]>(() => {
+        const out: MarkedEntry[] = [];
+        for (const col of columns) {
+            if (col.mark === "") continue;
+            const n = Number(col.mark);
+            if (!Number.isFinite(n)) continue;
+            out.push({
+                assessmentType: col.assessmentType,
+                assessmentNumber: col.assessmentNumber,
+                marks: n,
+            });
+        }
+        return out;
+    }, [columns]);
+
+    const unitScore = useMemo(() => computeUnitScore(drafts), [drafts]);
+
+    const onDraftChangeRef = useRef(onDraftChange);
+    useEffect(() => {
+        onDraftChangeRef.current = onDraftChange;
+    }, [onDraftChange]);
+
+    useEffect(() => {
+        onDraftChangeRef.current?.(unit._id, drafts);
+    }, [drafts, unit._id]);
 
     /* -------------------------- Column actions ------------------------ */
 
@@ -217,11 +273,7 @@ export function UnitPanel({
 
         for (const col of columns) {
             const raw = col.mark;
-            if (raw === "") {
-                // Emptying an existing cell = leave as-is (no destructive
-                // update without an explicit API contract). Skip silently.
-                continue;
-            }
+            if (raw === "") continue;
 
             const mark = Number(raw);
             if (!Number.isFinite(mark) || mark < 0 || mark > 100) {
@@ -337,7 +389,6 @@ export function UnitPanel({
 
     return (
         <section className="overflow-hidden rounded-sm border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-            {/* Header / toggle */}
             <button
                 type="button"
                 onClick={() => setExpanded((v) => !v)}
@@ -358,16 +409,42 @@ export function UnitPanel({
                 <span className="min-w-0 flex-1 truncate text-sm font-semibold text-zinc-900 dark:text-white">
                     {unit.name}
                 </span>
-                <span className="shrink-0 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
+
+                {unitScore.complete ? (
+                    <span
+                        className="flex shrink-0 items-center gap-1.5"
+                        title={`CATs + Practicals avg ${unitScore.continuousAvg.toFixed(
+                            1,
+                        )} × 30% + Final ${unitScore.finalMark.toFixed(1)} × 70% = ${unitScore.score.toFixed(1)}%`}
+                    >
+                        <span className="font-mono text-xs font-bold tabular-nums text-zinc-700 dark:text-zinc-200">
+                            {unitScore.score.toFixed(1)}%
+                        </span>
+                        <span
+                            className={`inline-flex items-center rounded-sm px-2 py-0.5 text-[10px] font-semibold ring-1 ring-inset ${gradeTone(
+                                unitScore.grade,
+                            )}`}
+                        >
+                            {unitScore.grade}
+                        </span>
+                    </span>
+                ) : (
+                    <span
+                        className="shrink-0 rounded-sm bg-zinc-500/10 px-2 py-0.5 text-[10px] font-semibold text-zinc-500 ring-1 ring-inset ring-zinc-500/20 dark:text-zinc-400"
+                        title="Add at least one CAT/practical and a final exam to grade this unit"
+                    >
+                        Pending
+                    </span>
+                )}
+
+                <span className="hidden shrink-0 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 sm:block">
                     {columns.length} assessment
                     {columns.length === 1 ? "" : "s"}
                 </span>
             </button>
 
-            {/* Expanded content */}
             {expanded && (
                 <div className="border-t border-zinc-100 p-4 dark:border-zinc-800">
-                    {/* Toolbar */}
                     <div className="mb-3 flex flex-wrap items-center gap-2">
                         {!showAddColumn && (
                             <button
@@ -444,7 +521,6 @@ export function UnitPanel({
                         )}
                     </div>
 
-                    {/* Columns */}
                     {columns.length === 0 ? (
                         <p className="rounded-sm border border-dashed border-zinc-300 px-4 py-6 text-center text-xs text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
                             No assessments recorded for this unit yet. Add a
@@ -503,7 +579,6 @@ export function UnitPanel({
                         </div>
                     )}
 
-                    {/* Notifications */}
                     {saveError && (
                         <div className="mt-3 flex items-start gap-2 rounded-sm border-l-4 border-red-500 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-600 dark:bg-red-950/30 dark:text-red-300">
                             <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
@@ -517,7 +592,6 @@ export function UnitPanel({
                         </div>
                     )}
 
-                    {/* Actions */}
                     <div className="mt-3 flex items-center justify-end gap-2">
                         <button
                             type="button"
