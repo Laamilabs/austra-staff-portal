@@ -67,7 +67,12 @@ interface GradePreview {
     totalCount: number;
     hasComplete: boolean;
     grade: string | null;
-    perUnit: { id: string; code: string; complete: boolean }[];
+    perUnit: {
+        id: string;
+        code: string;
+        name: string; // NEW
+        complete: boolean;
+    }[];
 }
 
 /* -------------------------------------------------------------------------- */
@@ -112,8 +117,6 @@ function StudentUnitsSheetPageInner() {
 
     /* -------------------- Expand / collapse all state ------------------ */
 
-    // Panels start expanded (`defaultExpanded` in UnitPanel). This pair
-    // lets the header button push a state change to every panel at once.
     const [expandAll, setExpandAll] = useState(true);
     const [expandVersion, setExpandVersion] = useState(0);
 
@@ -254,6 +257,7 @@ function StudentUnitsSheetPageInner() {
             perUnit: perUnit.map((p) => ({
                 id: p.unit._id,
                 code: p.unit.code,
+                name: p.unit.name, // NEW
                 complete: p.calc.complete,
             })),
         };
@@ -276,13 +280,13 @@ function StudentUnitsSheetPageInner() {
                 {/* NAV */}
                 <nav
                     aria-label="Page navigation"
-                    className="flex items-center justify-between gap-2"
+                    className="flex flex-wrap items-center justify-between gap-2"
                 >
                     <Link
                         href="/results/new/student-based"
                         className={`${btnSecondary} ${btnSize}`}
                     >
-                        <ArrowLeft className="h-4 w-4" />
+                        <ArrowLeft className="h-4 w-4 shrink-0" />
                         <span className="sm:hidden">Back</span>
                         <span className="hidden sm:inline">
                             Back to Student Selection
@@ -295,7 +299,7 @@ function StudentUnitsSheetPageInner() {
                             aria-label="View academic profile"
                             className={`${btnSecondary} ${btnSize}`}
                         >
-                            <UserCircle2 className="h-4 w-4" />
+                            <UserCircle2 className="h-4 w-4 shrink-0" />
                             <span className="hidden sm:inline">
                                 View Academic Profile
                             </span>
@@ -384,16 +388,24 @@ function StudentUnitsSheetPageInner() {
                                                 key={p.id}
                                                 type="button"
                                                 onClick={() => jumpTo(p.id)}
-                                                className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-sm border border-zinc-200 bg-white px-2.5 font-mono text-[11px] font-bold text-[#082B66] transition hover:border-[#082B66] focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-orange-400 dark:hover:border-orange-400"
+                                                title={`${p.code} — ${p.name}`}
+                                                className="inline-flex shrink-0 items-start gap-1.5 rounded-sm border border-zinc-200 bg-white px-2.5 py-1.5 text-left transition hover:border-[#082B66] focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-orange-400"
                                             >
                                                 <span
-                                                    className={`h-1.5 w-1.5 rounded-full ${
+                                                    className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${
                                                         p.complete
                                                             ? "bg-emerald-500"
                                                             : "bg-amber-400"
                                                     }`}
                                                 />
-                                                {p.code}
+                                                <span className="flex flex-col leading-tight">
+                                                    <span className="font-mono text-[11px] font-bold text-[#082B66] dark:text-orange-400">
+                                                        {p.code}
+                                                    </span>
+                                                    <span className="text-[10px] font-normal text-zinc-500 dark:text-zinc-400">
+                                                        {p.name}
+                                                    </span>
+                                                </span>
                                             </button>
                                         ))}
                                     </div>
@@ -452,9 +464,7 @@ function StudentUnitsSheetPageInner() {
             </div>
 
             {/* LIVE GRADE BAR — phones & tablets */}
-            {ready && units.length > 0 && (
-                <LiveBar gp={gradePreview} />
-            )}
+            {ready && units.length > 0 && <LiveBar gp={gradePreview} />}
         </main>
     );
 }
@@ -488,10 +498,10 @@ function Hero({
                     </span>
                     <div className="min-w-0">
                         <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-orange-300">
-                            <ClipboardList className="h-3 w-3" />
+                            <ClipboardList className="h-3 w-3 shrink-0" />
                             Student mark sheet
                         </p>
-                        <h1 className="truncate text-xl font-bold leading-tight sm:text-2xl">
+                        <h1 className="text-xl font-bold leading-tight sm:text-2xl">
                             {studentFullName(student)}
                         </h1>
                         <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-white/70">
@@ -499,9 +509,9 @@ function Hero({
                                 {admissionNumber || "—"}
                             </span>
                             {course && (
-                                <span className="inline-flex max-w-full items-center gap-1 truncate rounded-sm bg-white/10 px-1.5 py-0.5 text-[11px] font-semibold text-white">
+                                <span className="inline-flex max-w-full items-center gap-1 rounded-sm bg-white/10 px-1.5 py-0.5 text-[11px] font-semibold text-white">
                                     <BookOpen className="h-3 w-3 shrink-0 text-orange-300" />
-                                    <span className="truncate">
+                                    <span className="break-words">
                                         {course.courseCode} — {course.name}
                                     </span>
                                 </span>
@@ -518,12 +528,12 @@ function Hero({
                     ].map((s) => (
                         <div
                             key={s.label}
-                            className="bg-[#082B66] px-3 py-2 text-center"
+                            className="bg-[#082B66] px-2 py-2 text-center sm:px-3"
                         >
                             <dt className="text-[10px] font-semibold uppercase tracking-wider text-white/60">
                                 {s.label}
                             </dt>
-                            <dd className="text-lg font-bold tabular-nums">
+                            <dd className="text-base font-bold tabular-nums sm:text-lg">
                                 {s.value}
                             </dd>
                         </div>
@@ -546,15 +556,14 @@ function GradeChip({
     large?: boolean;
 }) {
     const size = large ? "px-2.5 py-1 text-xs" : "px-2 py-0.5 text-[11px]";
+    const base =
+        "inline-flex items-center justify-center rounded-sm text-center font-semibold leading-tight ring-1 ring-inset";
+
     return grade ? (
-        <span
-            className={`inline-flex items-center whitespace-nowrap rounded-sm font-semibold ring-1 ring-inset ${size} ${gradeTone(grade)}`}
-        >
-            {grade}
-        </span>
+        <span className={`${base} ${size} ${gradeTone(grade)}`}>{grade}</span>
     ) : (
         <span
-            className={`inline-flex items-center whitespace-nowrap rounded-sm bg-zinc-500/10 font-semibold text-zinc-500 ring-1 ring-inset ring-zinc-500/20 dark:text-zinc-400 ${size}`}
+            className={`${base} ${size} bg-zinc-500/10 text-zinc-500 ring-zinc-500/20 dark:text-zinc-400`}
         >
             Not graded yet
         </span>
@@ -565,7 +574,7 @@ function FormulaNote() {
     return (
         <details className="group border-t border-zinc-100 dark:border-zinc-800">
             <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-2.5 text-[11px] font-semibold text-zinc-600 [&::-webkit-details-marker]:hidden dark:text-zinc-300">
-                <Info className="h-3.5 w-3.5 text-[#082B66] dark:text-orange-400" />
+                <Info className="h-3.5 w-3.5 shrink-0 text-[#082B66] dark:text-orange-400" />
                 How is the grade calculated?
             </summary>
             <p className="px-4 pb-3 text-[11px] leading-relaxed text-zinc-500 dark:text-zinc-400">
@@ -589,7 +598,7 @@ function GradeCard({ gp }: { gp: GradePreview }) {
     return (
         <section className={`${card} overflow-hidden`}>
             <header className="flex items-center gap-3 border-b border-zinc-100 px-4 py-3 dark:border-zinc-800">
-                <span className="flex h-7 w-7 items-center justify-center rounded-sm bg-emerald-500/10 text-emerald-600 ring-1 ring-inset ring-emerald-500/30 dark:text-emerald-400">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-sm bg-emerald-500/10 text-emerald-600 ring-1 ring-inset ring-emerald-500/30 dark:text-emerald-400">
                     <Award className="h-3.5 w-3.5" />
                 </span>
                 <div className="min-w-0">
@@ -644,7 +653,7 @@ function GradeCard({ gp }: { gp: GradePreview }) {
                     </div>
                 </div>
 
-                <div>
+                <div className="w-full">
                     <p className={fieldLabel}>Projected grade</p>
                     <div className="mt-1">
                         <GradeChip grade={gp.grade} large />
@@ -669,13 +678,13 @@ function GradeCard({ gp }: { gp: GradePreview }) {
                 <div className="flex flex-wrap items-center justify-center gap-2">
                     {gp.completeCount > 0 && (
                         <span className="inline-flex items-center gap-1.5 rounded-sm bg-emerald-500/10 px-2 py-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
-                            <CheckCircle2 className="h-3 w-3" />
+                            <CheckCircle2 className="h-3 w-3 shrink-0" />
                             {gp.completeCount} complete
                         </span>
                     )}
                     {gp.incompleteCount > 0 && (
                         <span className="inline-flex items-center gap-1.5 rounded-sm bg-amber-400/10 px-2 py-1 text-[11px] font-semibold text-amber-700 dark:text-amber-400">
-                            <AlertCircle className="h-3 w-3" />
+                            <AlertCircle className="h-3 w-3 shrink-0" />
                             {gp.incompleteCount} pending
                         </span>
                     )}
@@ -697,7 +706,7 @@ function LiveBar({ gp }: { gp: GradePreview }) {
             aria-live="polite"
             className="fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200 bg-white/95 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2.5 backdrop-blur xl:hidden dark:border-zinc-800 dark:bg-zinc-900/95"
         >
-            <div className="mx-auto flex max-w-xl items-center gap-3">
+            <div className="mx-auto flex w-full max-w-full items-center gap-3">
                 <div className="shrink-0">
                     <p className={fieldLabel}>Overall</p>
                     <p className="text-xl font-bold leading-none tabular-nums text-[#082B66] dark:text-white">
@@ -708,9 +717,11 @@ function LiveBar({ gp }: { gp: GradePreview }) {
                 </div>
 
                 <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                        <GradeChip grade={gp.grade} />
-                        <span className="font-mono text-[11px] font-semibold tabular-nums text-zinc-600 dark:text-zinc-300">
+                    <div className="flex items-center gap-2">
+                        <div className="min-w-0">
+                            <GradeChip grade={gp.grade} />
+                        </div>
+                        <span className="ml-auto shrink-0 font-mono text-[11px] font-semibold tabular-nums text-zinc-600 dark:text-zinc-300">
                             {gp.completeCount}/{gp.totalCount}
                         </span>
                     </div>
@@ -870,15 +881,13 @@ function TemplateCard({
                             role="status"
                             className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400"
                         >
-                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
                             {feedback}
                         </p>
                     )}
                 </div>
             )}
 
-            {/* On phones/tablets the grade card is replaced by the live bar,
-                so the formula lives here instead. */}
             <div className="xl:hidden">
                 <FormulaNote />
             </div>
