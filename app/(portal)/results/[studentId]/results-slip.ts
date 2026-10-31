@@ -82,31 +82,31 @@ const FONT_FILES: {
     file: string;
     family: string;
 }[] = [
-    {
-        key: "body",
-        url: "/fonts/Inter-Regular.ttf",
-        file: "Inter-Regular.ttf",
-        family: "Inter",
-    },
-    {
-        key: "strong",
-        url: "/fonts/Inter-SemiBold.ttf",
-        file: "Inter-SemiBold.ttf",
-        family: "InterSemiBold",
-    },
-    {
-        key: "head",
-        url: "/fonts/PlusJakartaSans-Bold.ttf",
-        file: "PlusJakartaSans-Bold.ttf",
-        family: "JakartaBold",
-    },
-    {
-        key: "display",
-        url: "/fonts/PlusJakartaSans-ExtraBold.ttf",
-        file: "PlusJakartaSans-ExtraBold.ttf",
-        family: "JakartaExtraBold",
-    },
-];
+        {
+            key: "body",
+            url: "/fonts/Inter-Regular.ttf",
+            file: "Inter-Regular.ttf",
+            family: "Inter",
+        },
+        {
+            key: "strong",
+            url: "/fonts/Inter-SemiBold.ttf",
+            file: "Inter-SemiBold.ttf",
+            family: "InterSemiBold",
+        },
+        {
+            key: "head",
+            url: "/fonts/PlusJakartaSans-Bold.ttf",
+            file: "PlusJakartaSans-Bold.ttf",
+            family: "JakartaBold",
+        },
+        {
+            key: "display",
+            url: "/fonts/PlusJakartaSans-ExtraBold.ttf",
+            file: "PlusJakartaSans-ExtraBold.ttf",
+            family: "JakartaExtraBold",
+        },
+    ];
 
 /** Used for any font that fails to load, so the slip always generates. */
 const FALLBACK: Record<FontKey, FontSpec> = {
@@ -169,7 +169,6 @@ async function getImageDimensions(
 /* -------------------------------------------------------------------------- */
 /* Results slip generator                                                     */
 /* -------------------------------------------------------------------------- */
-
 export async function generateResultsSlip({
     studentName,
     admissionNumber,
@@ -177,18 +176,15 @@ export async function generateResultsSlip({
     courseName,
     aggregate,
     totalUnits,
+    qrDataUrl,                       // NEW
 }: {
     studentName: string;
     admissionNumber?: string;
     courseCode: string;
     courseName: string;
     aggregate: CourseAggregate;
-    /**
-     * Total number of units the course offers (including units that
-     * have no results recorded yet). Falls back to the number of units
-     * present in the aggregate when omitted.
-     */
     totalUnits?: number;
+    qrDataUrl?: string;              // NEW: PNG data URL from <QRCodeCanvas>
 }): Promise<void> {
     /* ---------- Load assets, fonts + PDF libs in parallel ---------- */
     const [letterheadDataUrl, signatureDataUrl, fontData, pdfImports] =
@@ -339,7 +335,16 @@ export async function generateResultsSlip({
     y += 17.5;
 
     /* ---------- 3. Student / course card ---------- */
-    const colBX = M + CW * 0.7;
+
+    // Reserve a column for the QR when we have one.
+    const hasQr = Boolean(qrDataUrl);
+    const qrColW = hasQr ? 30 : 0;
+    const qrGap = hasQr ? 3 : 0;
+    const cardW = CW - qrColW - qrGap;
+    const qrBoxX = M + cardW + qrGap;
+
+    // Column split within the (possibly narrower) card
+    const colBX = M + cardW * 0.7;
     const colAX = M + 5;
     const colAW = colBX - colAX - 8;
 
@@ -350,14 +355,22 @@ export async function generateResultsSlip({
     doc.setFontSize(8.5);
     const courseLines: string[] = doc.splitTextToSize(courseName, colAW);
 
-    const row1 = y + 5; // caption baseline, row 1
+    const row1 = y + 5;
     const nameY = row1 + 5;
-    const row2 = nameY + (nameLines.length - 1) * 4.7 + 6; // caption, row 2
+    const row2 = nameY + (nameLines.length - 1) * 4.7 + 6;
     const courseY = row2 + 4.6;
     const cardBottom = courseY + (courseLines.length - 1) * 3.7 + 3.6;
-    const cardH = cardBottom - y;
 
-    card(M, y, CW, cardH);
+    // Content-driven height, but guarantee room for QR + caption.
+    const contentH = cardBottom - y;
+    const qrInner = 22;
+    const qrGroupH = qrInner + 7;              // QR + caption gap
+    const minCardHForQr = qrGroupH + 6;        // 3mm breathing room each side
+    const cardH = hasQr
+        ? Math.max(contentH, minCardHForQr)
+        : contentH;
+
+    card(M, y, cardW, cardH);
     pill(M + 2, y + 3.5, cardH - 7);
     doc.setDrawColor(...BORDER);
     doc.setLineWidth(0.2);
@@ -386,6 +399,25 @@ export async function generateResultsSlip({
     doc.setFontSize(8.5);
     doc.setTextColor(...INK);
     doc.text(courseCode, colBX, courseY);
+
+    // QR block (matches the palette + settings of <GenerateStudentQr />)
+    if (hasQr && qrDataUrl) {
+        card(qrBoxX, y, qrColW, cardH, WHITE);
+
+        const qrDrawX = qrBoxX + (qrColW - qrInner) / 2;
+        const qrDrawY = y + (cardH - qrGroupH) / 2;
+
+        doc.addImage(qrDataUrl, "PNG", qrDrawX, qrDrawY, qrInner, qrInner);
+
+        caption(
+            "Scan to verify",
+            qrBoxX + qrColW / 2,
+            qrDrawY + qrInner + 3.5,
+            MUTED,
+            5.5,
+            "center",
+        );
+    }
 
     y += cardH + 5;
 

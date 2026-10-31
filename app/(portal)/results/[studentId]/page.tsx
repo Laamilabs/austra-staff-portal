@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"; // ← added useRef
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { QRCodeCanvas } from "qrcode.react"; // ← NEW
 import {
     AlertCircle,
     ArrowLeft,
@@ -154,6 +155,9 @@ export default function StudentResultsPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [downloading, setDownloading] = useState<string | null>(null);
+
+    /* -------------------- NEW: hidden QR canvas ref -------------------- */
+    const qrRef = useRef<HTMLCanvasElement | null>(null);
 
     /* ------------------------------ Fetch ------------------------------ */
 
@@ -328,6 +332,24 @@ export default function StudentResultsPage() {
         ? ""
         : sections[0]?.admissionNumber ?? "";
 
+    /* ------------ NEW: student email + QR target URL ------------ */
+    const studentEmail = useMemo(() => {
+        if (!student) return "";
+        const uid = student.userId;
+        if (uid && typeof uid === "object") {
+            const u = uid as StudentUser;
+            if (u.email?.trim()) return u.email.trim();
+        }
+        const direct = (student as unknown as { email?: string }).email;
+        return typeof direct === "string" ? direct.trim() : "";
+    }, [student]);
+
+    const qrUrl = studentEmail
+        ? `https://austratraininginstitute.co.ke/studentQr/${encodeURIComponent(
+              studentEmail,
+          )}`
+        : "";
+
     const sheetHref = (courseId: string) =>
         `/results/new/student-based/units-sheet?studentId=${encodeURIComponent(
             studentId,
@@ -345,6 +367,13 @@ export default function StudentResultsPage() {
 
             try {
                 setDownloading(courseId);
+
+                // High-res PNG from the hidden <QRCodeCanvas>.
+                // If the logo hasn't painted yet this still yields a valid
+                // logo-less QR — the slip always generates.
+                const qrDataUrl =
+                    qrRef.current?.toDataURL("image/png") ?? undefined;
+
                 await generateResultsSlip({
                     studentName: displayName,
                     admissionNumber: section.admissionNumber,
@@ -352,6 +381,7 @@ export default function StudentResultsPage() {
                     courseName: section.courseName,
                     aggregate: section.aggregate,
                     totalUnits: totalUnitsByCourse.get(section.courseId),
+                    qrDataUrl, // ← NEW
                 });
             } catch (err) {
                 console.error("Failed to generate results slip:", err);
@@ -374,7 +404,29 @@ export default function StudentResultsPage() {
     /* ------------------------------- Render ---------------------------- */
 
     return (
-        <div className="mx-auto max-w-screen-7xl space-y-6 p-6">
+        <div className="mx-auto max-w-full space-y-6 py-6">
+            {/* NEW: hidden QR — same settings as <GenerateStudentQr /> so the
+                slip and on-page QR match visually. */}
+            {qrUrl && (
+                <div className="hidden" aria-hidden="true">
+                    <QRCodeCanvas
+                        ref={qrRef}
+                        value={qrUrl}
+                        size={512}
+                        level="H"
+                        bgColor="#ffffff"
+                        fgColor="#0B1E3D"
+                        marginSize={1}
+                        imageSettings={{
+                            src: "/logo2.png",
+                            height: 512 * 0.22,
+                            width: 512 * 0.22,
+                            excavate: true,
+                        }}
+                    />
+                </div>
+            )}
+
             {/* NAV */}
             <div className="flex flex-wrap items-center gap-2">
                 <Link
