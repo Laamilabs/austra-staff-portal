@@ -186,7 +186,7 @@ function GradingScaleCard() {
                 </div>
             </header>
 
-            <ul className="grid grid-cols-2 gap-1.5 p-3 sm:grid-cols-4 xl:grid-cols-1">
+            <ul className="grid grid-cols-1 gap-1.5 p-1 md:grid-cols-4 xl:grid-cols-1">
                 {GRADING_SCALE.map((g) => (
                     <li
                         key={g.label}
@@ -265,7 +265,7 @@ export default function StudentResultsPage() {
             const message =
                 err && typeof err === "object" && "response" in err
                     ? (err as { response?: { data?: { message?: string } } })
-                          .response?.data?.message
+                        .response?.data?.message
                     : null;
             setError(
                 message || "Failed to load student results. Please try again.",
@@ -411,8 +411,8 @@ export default function StudentResultsPage() {
 
     const qrUrl = studentEmail
         ? `https://austratraininginstitute.co.ke/studentQr/${encodeURIComponent(
-              studentEmail,
-          )}`
+            studentEmail,
+        )}`
         : "";
 
     const sheetHref = (courseId: string) =>
@@ -537,8 +537,8 @@ export default function StudentResultsPage() {
                                 {hasMultipleCourses
                                     ? `${sections.length} courses · assessment breakdown per course`
                                     : sections[0]?.admissionNumber
-                                      ? `Adm. No. ${sections[0].admissionNumber}`
-                                      : "Assessment breakdown per unit"}
+                                        ? `Adm. No. ${sections[0].admissionNumber}`
+                                        : "Assessment breakdown per unit"}
                             </p>
                         </div>
                     </div>
@@ -677,29 +677,26 @@ function CourseTabs({
                         role="tab"
                         aria-selected={isActive}
                         onClick={() => onSelect(s.courseId)}
-                        className={`relative flex min-h-12 w-[11rem] shrink-0 snap-start items-center gap-2.5 rounded-sm border px-3 py-2 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 sm:w-[14rem] ${
-                            isActive
+                        className={`relative flex min-h-12 w-[11rem] shrink-0 snap-start items-center gap-2.5 rounded-sm border px-3 py-2 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 sm:w-[14rem] ${isActive
                                 ? "border-[#082B66] bg-[#082B66] text-white after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-sm after:bg-orange-400 dark:border-orange-400 dark:bg-orange-400/10"
                                 : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
-                        }`}
+                            }`}
                     >
                         <span
                             className={`h-2 w-2 shrink-0 rounded-full ${statusDot(s)}`}
                         />
                         <span className="min-w-0 flex-1">
                             <span
-                                className={`block font-mono text-[11px] font-bold ${
-                                    isActive
+                                className={`block font-mono text-[11px] font-bold ${isActive
                                         ? "text-orange-400"
                                         : "text-[#082B66] dark:text-orange-400"
-                                }`}
+                                    }`}
                             >
                                 {s.courseCode}
                             </span>
                             <span
-                                className={`block truncate text-[11px] ${
-                                    isActive ? "text-white/80" : "text-zinc-500 dark:text-zinc-400"
-                                }`}
+                                className={`block truncate text-[11px] ${isActive ? "text-white/80" : "text-zinc-500 dark:text-zinc-400"
+                                    }`}
                             >
                                 {s.courseName}
                             </span>
@@ -1023,11 +1020,10 @@ function UnitsPanel({ aggregate }: { aggregate: CourseAggregate }) {
                             type="button"
                             onClick={() => setOnlyIncomplete(false)}
                             aria-pressed={!onlyIncomplete}
-                            className={`h-9 px-3 transition sm:h-8 ${
-                                !onlyIncomplete
+                            className={`h-9 px-3 transition sm:h-8 ${!onlyIncomplete
                                     ? "bg-[#082B66] text-white dark:bg-orange-400 dark:text-zinc-900"
                                     : "bg-white text-zinc-600 hover:bg-zinc-50 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                            }`}
+                                }`}
                         >
                             All ({aggregate.units.length})
                         </button>
@@ -1035,11 +1031,10 @@ function UnitsPanel({ aggregate }: { aggregate: CourseAggregate }) {
                             type="button"
                             onClick={() => setOnlyIncomplete(true)}
                             aria-pressed={onlyIncomplete}
-                            className={`h-9 border-l border-zinc-200 px-3 transition sm:h-8 dark:border-zinc-700 ${
-                                onlyIncomplete
+                            className={`h-9 border-l border-zinc-200 px-3 transition sm:h-8 dark:border-zinc-700 ${onlyIncomplete
                                     ? "bg-[#082B66] text-white dark:bg-orange-400 dark:text-zinc-900"
                                     : "bg-white text-zinc-600 hover:bg-zinc-50 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                            }`}
+                                }`}
                         >
                             Incomplete ({incompleteCount})
                         </button>
@@ -1117,11 +1112,10 @@ function Metric({
                 {label}
             </p>
             <p
-                className={`mt-0.5 font-mono tabular-nums ${
-                    strong
+                className={`mt-0.5 font-mono tabular-nums ${strong
                         ? "text-base font-bold text-zinc-900 dark:text-white"
                         : "text-sm font-bold text-zinc-800 dark:text-zinc-100"
-                }`}
+                    }`}
             >
                 {value === null ? "—" : fmt(value)}
                 <span className="ml-0.5 text-[10px] font-medium text-zinc-400">
