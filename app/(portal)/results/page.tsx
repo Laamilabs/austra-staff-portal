@@ -640,7 +640,7 @@ export default function ResultsPage() {
 
     return (
         <div
-            className="relative isolate mx-auto flex w-full max-w-[1920px] flex-col gap-4 sm:gap-5"
+            className="relative isolate mx-auto flex w-full max-w-full flex-col gap-4 sm:gap-5"
             style={{ fontFamily: WIN_FONT }}
         >
             {/* HEADER */}
