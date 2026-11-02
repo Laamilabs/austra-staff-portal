@@ -169,7 +169,7 @@ function UserDetailContent() {
     }
 
     return (
-        <div className="mx-auto max-w-full space-y-6 p-6">
+        <div className="mx-auto max-w-full space-y-6 py-4 sm:p-3">
             {/* Navigation & Header */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <Link
@@ -231,29 +231,39 @@ function UserDetailContent() {
 
                 <div className="relative px-6 pb-6">
                     {/* Avatar Header */}
-                    <div className="-mt-12 mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-                        <div className="flex items-end gap-4">
+                    <div className="-mt-8 mb-6 flex flex-col gap-4 sm:-mt-12 sm:flex-row sm:items-end sm:justify-between">
+                        {/* Profile image and details */}
+                        <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-end sm:gap-4">
                             {user?.profileImage ? (
                                 <img
                                     src={user.profileImage}
                                     alt={user.name}
-                                    className="h-42 w-42 rounded-sm border-2 border-orange-400 object-cover shadow-md dark:border-zinc-900"
+                                    className="shrink-0 rounded-sm border-2 border-orange-400 object-cover shadow-md sm:h-36 sm:w-36 h-42 w-42 dark:border-zinc-900"
                                 />
                             ) : (
-                                <div className="flex h-42 w-42 items-center justify-center rounded-sm border-2 border-orange-400 bg-[#082B66] text-2xl font-bold text-white shadow-md dark:border-zinc-900 dark:bg-orange-500 dark:text-zinc-950">
+                                <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-sm border-2 border-orange-400 bg-[#082B66] text-2xl font-bold text-white shadow-md sm:h-36 sm:w-36 lg:h-42 lg:w-42 dark:border-zinc-900 dark:bg-orange-500 dark:text-zinc-950">
                                     {getUserInitials(user?.name)}
                                 </div>
                             )}
-                            <div>
-                                <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+
+                            {/* User information */}
+                            <div className="min-w-0 sm:pb-1 text-left">
+                                <h2 className="wrap-break-word text-xl font-bold text-zinc-900 sm:text-2xl dark:text-zinc-100">
                                     {user?.name}
                                 </h2>
-                                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+
+                                <p className="break-all text-sm text-zinc-500 dark:text-zinc-400">
                                     {user?.email}
                                 </p>
                             </div>
                         </div>
-                        {user && <div>{getRoleBadge(user.role)}</div>}
+
+                        {/* Role badge */}
+                        {user && (
+                            <div className="flex justify-start sm:justify-end">
+                                {getRoleBadge(user.role)}
+                            </div>
+                        )}
                     </div>
 
                     {!isEditing ? (
